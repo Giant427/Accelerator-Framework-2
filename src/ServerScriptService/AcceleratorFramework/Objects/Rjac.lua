@@ -1,24 +1,22 @@
-local WorkspaceFolder = workspace:FindFirstChild("AcceleratorFramework")
-local CharacterProfileFolder = WorkspaceFolder:FindFirstChild("CharacterProfile")
+local RjacFolder = workspace:FindFirstChild("Rjac")
 
------------------------
--- Character Profile --
------------------------
+----------
+-- Rjac --
+----------
 
-local CharacterProfile = {}
+local Rjac = {}
 
 ---------------
 -- Variables --
 ---------------
 
-CharacterProfile.Player = nil
-CharacterProfile.Character = nil
-CharacterProfile.Humanoid = nil
+Rjac.Player = nil
+Rjac.Character = nil
 
-CharacterProfile.Configurations = {}
-CharacterProfile.TiltPart = nil
-CharacterProfile.BodyPosition = nil
-CharacterProfile.Enabled = false
+Rjac.Configurations = {}
+Rjac.TiltPart = nil
+Rjac.BodyPosition = nil
+Rjac.Enabled = false
 
 ---------------
 -- Functions --
@@ -26,7 +24,7 @@ CharacterProfile.Enabled = false
 
 -- Initiate
 
-function CharacterProfile:Initiate()
+function Rjac:Initiate()
 	-- Character added
 
 	self.Player.CharacterAdded:Connect(function(Character)
@@ -35,31 +33,27 @@ function CharacterProfile:Initiate()
 
 	-- Build TiltPart
 
-	if not self.TiltPart then
-		self.TiltPart = Instance.new("Part")
-		self.TiltPart.Name = self.Player.Name
-		self.TiltPart.Size = Vector3.new(0.1, 0.1, 0.1)
-		self.TiltPart.Transparency = 1
-		self.TiltPart.CanTouch = false
-		self.TiltPart.CanCollide = false
-		self.TiltPart.Parent = CharacterProfileFolder
-	end
+	self.TiltPart = Instance.new("Part")
+	self.TiltPart.Name = self.Player.Name
+	self.TiltPart.Size = Vector3.new(0.1, 0.1, 0.1)
+	self.TiltPart.Transparency = 1
+	self.TiltPart.CanTouch = false
+	self.TiltPart.CanCollide = false
+	self.TiltPart.Parent = RjacFolder
 
 	-- Build BodyPosition
 
-	if not self.BodyPosition then
-		self.BodyPosition = Instance.new("BodyPosition")
-		self.BodyPosition.D = 5000
-		self.BodyPosition.P = 1000000
-		self.BodyPosition.MaxForce = Vector3.new(1,1,1) * 1000000
-		self.BodyPosition.Parent = self.TiltPart
-	end
+	self.BodyPosition = Instance.new("BodyPosition")
+	self.BodyPosition.D = 5000
+	self.BodyPosition.P = 1000000
+	self.BodyPosition.MaxForce = Vector3.new(1,1,1) * 1000000
+	self.BodyPosition.Parent = self.TiltPart
 end
 
 -- Character added
 
-function CharacterProfile:CharacterAdded(Character)
-	self.Humanoid = Character:WaitForChild("Humanoid")
+function Rjac:CharacterAdded(Character)
+    Character:WaitForChild("Humanoid")
 	self.Character = Character
 
 	-- Replace body joint offsets
@@ -79,7 +73,7 @@ end
 
 -- Update character
 
-function CharacterProfile:UpdateCharacter()
+function Rjac:UpdateCharacter()
 	if not self.Enabled then return end
 
 	if not self.Character then
@@ -90,32 +84,38 @@ function CharacterProfile:UpdateCharacter()
 	for _,v in pairs(self.Configurations) do
 		-- Drops unnecesarry errors when character is being removed or player is leaving, kind of stupid to add "if"s every now and then, "pcall" is better
 
-		pcall(function()
-			local JointValue = CFrame.Angles(math.asin(self.TiltPart.Position.Y) * v.MultiplierVector.X, math.asin(self.TiltPart.Position.X) * v.MultiplierVector.Y, math.asin(self.TiltPart.Position.Z) * v.MultiplierVector.Z)
+        pcall(function()
+            local JointValue = CFrame.Angles(math.asin(self.TiltPart.Position.Y) * v.MultiplierVector.X, -math.asin(self.TiltPart.Position.X) * v.MultiplierVector.Y, math.asin(self.TiltPart.Position.Z) * v.MultiplierVector.Z)
 
-			local BodyPart = self.Player.Character:FindFirstChild(v.BodyPart)
-			local BodyJoint
+            local BodyPart = self.Player.Character:FindFirstChild(v.BodyPart)
+            local BodyJoint
 
-			if BodyPart then
-				BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
+            if BodyPart then
+                BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
 
-				if BodyJoint then
-					BodyJoint.C0 = v.JointOffset * JointValue
-				end
-			end
-		end)
+                if BodyJoint then
+                    BodyJoint.C0 = v.JointOffset * JointValue
+                end
+            end
+        end)
 	end
 end
 
 -- Update body position
 
-function CharacterProfile:UpdateBodyPosition(CameraCFrame)
+function Rjac:UpdateBodyPosition(CameraCFrame)
 	if not self.Character then
 		warn("Character does not exist for Player:", self.Player.Name)
 		return
 	end
 
-	self.BodyPosition.Position = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
+	local Value = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
+
+	if Value.Y < -0.965 then
+		Value = Vector3.new(Value.X, -0.965, Value.Z)
+	end
+
+	self.BodyPosition.Position = Value
 end
 
 -- Add/Remove body joint
@@ -123,7 +123,7 @@ end
 do
 	-- Add body joint
 
-	function CharacterProfile:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
+	function Rjac:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
 				return
@@ -139,6 +139,10 @@ do
 			MultiplierVector = MultiplierVector,
 		}
 
+        -- Insert Configuration
+
+		table.insert(self.Configurations, Configuration)
+
 		-- Set joint offset
 
 		if self.Character then
@@ -148,19 +152,15 @@ do
 				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
 
 				if CharacterBodyJoint then
-					Configuration.JointOffset = CharacterBodyJoint.C0
+                    self:UpdateBodyJointOffset(Configuration.BodyPart, Configuration.BodyJoint, CharacterBodyJoint.C0)
 				end
 			end
 		end
-
-		-- Insert Configuration
-
-		table.insert(self.Configurations, Configuration)
 	end
 
 	-- Remove body joint
 
-	function CharacterProfile:RemoveBodyJoint(BodyPart, BodyJoint)
+	function Rjac:RemoveBodyJoint(BodyPart, BodyJoint)
 		-- Remove and store configuration
 
 		local Configuration
@@ -194,7 +194,7 @@ end
 do
 	-- Update body joint offset
 
-	function CharacterProfile:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
+	function Rjac:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
 				v.JointOffset = JointOffset
@@ -205,7 +205,7 @@ do
 
 	-- Update body joint multiplier vector
 
-	function CharacterProfile:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
+	function Rjac:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
 				v.MultiplierVector = MultiplierVector
@@ -215,21 +215,21 @@ do
 	end
 end
 
-------------------------------
--- Character profile module --
-------------------------------
+-----------------
+-- Rjac module --
+-----------------
 
-local CharacterProfileModule = {}
+local RjacModule = {}
 
 -----------------
 -- Constructor --
 -----------------
 
-function CharacterProfileModule:New(ProfileInfo)
-    ProfileInfo = ProfileInfo or {}
-	setmetatable(ProfileInfo, CharacterProfile)
-	CharacterProfile.__index = CharacterProfile
+function RjacModule:New(ProfileInfo)
+	ProfileInfo = ProfileInfo or {}
+	setmetatable(ProfileInfo, Rjac)
+	Rjac.__index = Rjac
 	return ProfileInfo
 end
 
-return CharacterProfileModule
+return RjacModule

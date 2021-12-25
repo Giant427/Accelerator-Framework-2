@@ -48,7 +48,7 @@ function ClientPlayerProfile:Initiate()
 
 	task.spawn(function()
 		while task.wait() do
-			self.RemoteEvent:FireServer("CharacterProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
+			self.RemoteEvent:FireServer("RjacProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
 		end
 	end)
 end

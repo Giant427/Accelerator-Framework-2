@@ -16,7 +16,7 @@ local ModuleScript = To_Be_Cloned:WaitForChild("ModuleScript")
 
 local Objects = script.Parent
 local ClientPlayerProfile = Objects:WaitForChild("ClientPlayerProfile")
-local CharacterProfile = require(Objects:WaitForChild("CharacterProfile"))
+local Rjac = require(Objects:WaitForChild("Rjac"))
 
 --------------------
 -- Player Profile --
@@ -39,7 +39,7 @@ PlayerProfile.CameraCFrame = CFrame.new()
 -- Profile Objects --
 ---------------------
 
-PlayerProfile.CharacterProfile = nil
+PlayerProfile.RjacProfile = nil
 
 ---------------
 -- Functions --
@@ -75,19 +75,19 @@ function PlayerProfile:Initiate()
 	-- Character profile
 
 	do
-		local CharacterProfileInfo = {}
-		CharacterProfileInfo.Player = self.Player
-		CharacterProfileInfo.Character = self.Character
-		CharacterProfileInfo.Enabled = true
+		local RjacProfileInfo = {}
+		RjacProfileInfo.Player = self.Player
+		RjacProfileInfo.Character = self.Character
 
-		self.CharacterProfile = CharacterProfile:New(CharacterProfileInfo)
-		self.CharacterProfile:Initiate()
+		self.RjacProfile = Rjac:New(RjacProfileInfo)
+		self.RjacProfile:Initiate()
+		self.RjacProfile.Enabled = true
 
 		-- Update body parts
 
 		do
 			RunService.Heartbeat:Connect(function()
-				self.CharacterProfile:UpdateCharacter()
+				self.RjacProfile:UpdateCharacter()
 			end)
 		end
 
@@ -97,27 +97,27 @@ function PlayerProfile:Initiate()
 			{
 				BodyPart = "Head",
 				BodyJoint = "Neck",
-				MultiplierVector = Vector3.new(0.5, 0, 0),
+				MultiplierVector = Vector3.new(0.8, 0.8, 0),
 			},
 			{
 				BodyPart = "RightUpperArm",
 				BodyJoint = "RightShoulder",
-				MultiplierVector = Vector3.new(0.5, 0, 0),
+				MultiplierVector = Vector3.new(0.8, 0, 0),
 			},
 			{
 				BodyPart = "LeftUpperArm",
 				BodyJoint = "LeftShoulder",
-				MultiplierVector = Vector3.new(0.5, 0, 0),
+				MultiplierVector = Vector3.new(0.8, 0, 0),
 			},
 			{
 				BodyPart = "UpperTorso",
 				BodyJoint = "Waist",
-				MultiplierVector = Vector3.new(0.5, 0, 0),
+				MultiplierVector = Vector3.new(0.2, 0.2, 0),
 			},
 		}
 
 		for _,v in pairs(Configurations) do
-			self.CharacterProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
+			self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
 		end
 	end
 end
@@ -126,7 +126,7 @@ end
 
 function PlayerProfile:CharacterAdded(Character)
 	self.Character = Character
-	self.CharacterProfile.Character = Character
+	self.RjacProfile.Character = Character
 end
 
 -- Remote event
@@ -150,9 +150,9 @@ function PlayerProfile:RemoteEventRequest(Request, arg1)
 
 	-- Update character profile tilt part
 
-	if Request == "CharacterProfile:UpdateBodyPosition()" then
+	if Request == "RjacProfile:UpdateBodyPosition()" then
 		self.CameraCFrame = arg1
-		self.CharacterProfile:UpdateBodyPosition(arg1)
+		self.RjacProfile:UpdateBodyPosition(arg1)
 	end
 end
 
