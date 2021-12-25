@@ -54,8 +54,6 @@ function CharacterProfile:Initiate()
 		self.BodyPosition.MaxForce = Vector3.new(1,1,1) * 1000000
 		self.BodyPosition.Parent = self.TiltPart
 	end
-
-	-- Get body joint offsets
 end
 
 -- Character added
@@ -64,7 +62,7 @@ function CharacterProfile:CharacterAdded(Character)
 	self.Humanoid = Character:WaitForChild("Humanoid")
 	self.Character = Character
 
-	-- Replace body join offsets
+	-- Replace body joint offsets
 
 	for _,v in pairs(self.Configurations) do
 		local BodyPart = self.Character:FindFirstChild(v.BodyPart)
@@ -93,7 +91,7 @@ function CharacterProfile:UpdateCharacter()
 		-- Drops unnecesarry errors when character is being removed or player is leaving, kind of stupid to add "if"s every now and then, "pcall" is better
 
 		pcall(function()
-			local Value = CFrame.Angles(math.asin(self.TiltPart.Position.Y) * v.MultiplierVector.X, math.asin(self.TiltPart.Position.X) * v.MultiplierVector.Y, math.asin(self.TiltPart.Position.Z) * v.MultiplierVector.Z)
+			local JointValue = CFrame.Angles(math.asin(self.TiltPart.Position.Y) * v.MultiplierVector.X, math.asin(self.TiltPart.Position.X) * v.MultiplierVector.Y, math.asin(self.TiltPart.Position.Z) * v.MultiplierVector.Z)
 
 			local BodyPart = self.Player.Character:FindFirstChild(v.BodyPart)
 			local BodyJoint
@@ -102,7 +100,7 @@ function CharacterProfile:UpdateCharacter()
 				BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
 
 				if BodyJoint then
-					BodyJoint.C0 = v.JointOffset * Value
+					BodyJoint.C0 = v.JointOffset * JointValue
 				end
 			end
 		end)
@@ -118,27 +116,101 @@ function CharacterProfile:UpdateBodyPosition(CameraCFrame)
 	end
 
 	self.BodyPosition.Position = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
-	print(self.BodyPosition.Position)
 end
 
--- Update body joint offset
+-- Add/Remove body joint
 
-function CharacterProfile:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
-	for _,v in pairs(self.Configurations) do
-		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-			v.JointOffset = JointOffset
-			break
+do
+	-- Add body joint
+
+	function CharacterProfile:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
+		for _,v in pairs(self.Configurations) do
+			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+				return
+			end
+		end
+
+		-- Create configuration
+
+		local Configuration = {
+			BodyPart = BodyPart,
+			BodyJoint = BodyJoint,
+			JointOffset = CFrame.new(),
+			MultiplierVector = MultiplierVector,
+		}
+
+		-- Set joint offset
+
+		if self.Character then
+			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
+			local CharacterBodyJoint
+			if CharacterBodyPart then
+				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
+
+				if CharacterBodyJoint then
+					Configuration.JointOffset = CharacterBodyJoint.C0
+				end
+			end
+		end
+
+		-- Insert Configuration
+
+		table.insert(self.Configurations, Configuration)
+	end
+
+	-- Remove body joint
+
+	function CharacterProfile:RemoveBodyJoint(BodyPart, BodyJoint)
+		-- Remove and store configuration
+
+		local Configuration
+
+		for i,v in pairs(self.Configurations) do
+			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+				Configuration = v
+				table.remove(self.Configurations, i)
+				break
+			end
+		end
+
+		-- Reset joint offset in character
+
+		if self.Character then
+			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
+			local CharacterBodyJoint
+			if CharacterBodyPart then
+				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
+
+				if CharacterBodyJoint then
+					CharacterBodyJoint.C0 = Configuration.JointOffset
+				end
+			end
 		end
 	end
 end
 
--- Update body joint multiplier vector
+-- Body joint properties
 
-function CharacterProfile:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
-	for _,v in pairs(self.Configurations) do
-		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-			v.MultiplierVector = MultiplierVector
-			break
+do
+	-- Update body joint offset
+
+	function CharacterProfile:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
+		for _,v in pairs(self.Configurations) do
+			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+				v.JointOffset = JointOffset
+				break
+			end
+		end
+	end
+
+	-- Update body joint multiplier vector
+
+	function CharacterProfile:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
+		for _,v in pairs(self.Configurations) do
+			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+				v.MultiplierVector = MultiplierVector
+				break
+			end
 		end
 	end
 end

@@ -47,7 +47,7 @@ function ClientPlayerProfile:Initiate()
 	-- Character profile
 
 	task.spawn(function()
-		while task.wait(0.01) do
+		while task.wait() do
 			self.RemoteEvent:FireServer("CharacterProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
 		end
 	end)
@@ -57,7 +57,6 @@ end
 
 function ClientPlayerProfile:CharacterAdded(Character)
 	self.Character = Character
-    print(Character.Name)
 end
 
 -- Remote event

@@ -63,12 +63,12 @@ function PlayerProfile:Initiate()
 		self.RemoteEvent.Name = self.Player.Name
 		self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
 
-		self.RemoteEvent.OnServerEvent:Connect(function(Player, Request)
+		self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
 			if not Player == self.Player then
 				self.Player:Kick("Tried to hack my game huh?")
 				return
 			end
-			self:RemoteEventRequest(Request)
+			self:RemoteEventRequest(Request, arg1)
 		end)
 	end
 
@@ -80,43 +80,45 @@ function PlayerProfile:Initiate()
 		CharacterProfileInfo.Character = self.Character
 		CharacterProfileInfo.Enabled = true
 
-		CharacterProfileInfo.Configurations = {
+		self.CharacterProfile = CharacterProfile:New(CharacterProfileInfo)
+		self.CharacterProfile:Initiate()
+
+		-- Update body parts
+
+		do
+			RunService.Heartbeat:Connect(function()
+				self.CharacterProfile:UpdateCharacter()
+			end)
+		end
+
+		-- Body joints configurations
+
+		local Configurations = {
 			{
 				BodyPart = "Head",
 				BodyJoint = "Neck",
-				JointOffset = CFrame.new(),
 				MultiplierVector = Vector3.new(0.5, 0, 0),
 			},
 			{
 				BodyPart = "RightUpperArm",
 				BodyJoint = "RightShoulder",
-				JointOffset = CFrame.new(),
 				MultiplierVector = Vector3.new(0.5, 0, 0),
 			},
 			{
 				BodyPart = "LeftUpperArm",
 				BodyJoint = "LeftShoulder",
-				JointOffset = CFrame.new(),
 				MultiplierVector = Vector3.new(0.5, 0, 0),
 			},
 			{
 				BodyPart = "UpperTorso",
 				BodyJoint = "Waist",
-				JointOffset = CFrame.new(),
 				MultiplierVector = Vector3.new(0.5, 0, 0),
 			},
 		}
 
-		self.CharacterProfile = CharacterProfile:New(CharacterProfileInfo)
-		self.CharacterProfile:Initiate()
-	end
-
-	-- Update body parts
-
-	do
-		RunService.Heartbeat:Connect(function()
-			self.CharacterProfile:UpdateCharacter()
-		end)
+		for _,v in pairs(Configurations) do
+			self.CharacterProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
+		end
 	end
 end
 
@@ -150,7 +152,7 @@ function PlayerProfile:RemoteEventRequest(Request, arg1)
 
 	if Request == "CharacterProfile:UpdateBodyPosition()" then
 		self.CameraCFrame = arg1
-		self.CharacterProfile:UpdateBodyPosition(self.CameraCFrame)
+		self.CharacterProfile:UpdateBodyPosition(arg1)
 	end
 end
 
