@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local MovementHandler = game.ReplicatedStorage:WaitForChild("MovementHandler"):WaitForChild("MovementHandler")
+
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
 ---------------------------
@@ -16,6 +18,10 @@ local ClientPlayerProfile = {}
 ClientPlayerProfile.Player = nil
 ClientPlayerProfile.Character = nil
 ClientPlayerProfile.RemoteEvent = nil
+
+-- Movement handler
+
+ClientPlayerProfile.MovementProfile = nil
 
 ---------------
 -- Functions --
@@ -45,6 +51,28 @@ function ClientPlayerProfile:Initiate()
 	RunService.Heartbeat:Connect(function()
 		self.RemoteEvent:FireServer("RjacProfile:UpdateDirection()", game.Workspace.CurrentCamera.CFrame)
 	end)
+
+	-- Movement profile
+
+	local State = Instance.new("StringValue")
+	State.Name = "State"
+
+	local HumanoidState = Instance.new("StringValue")
+	HumanoidState.Name = "HumanoidState"
+
+	self.MovementProfile = MovementHandler:Clone()
+	self.MovementProfile.Parent = script
+
+	State.Parent = self.MovementProfile
+	HumanoidState.Parent = self.MovementProfile
+
+	self.MovementProfile = require(self.MovementProfile)
+
+	self.MovementProfile.Player = self.Player
+	self.MovementProfile.State = State
+	self.MovementProfile.HumanoidState = HumanoidState
+
+	self.MovementProfile:Initiate()
 end
 
 -- Character added
