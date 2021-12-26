@@ -12,19 +12,11 @@ local RemoteEventsFolder = Instance.new("Folder")
 RemoteEventsFolder.Name = "RemoteEventsFolder"
 RemoteEventsFolder.Parent = ReplicatedStorageFolder
 
-------------------
--- To be cloned --
-------------------
-
-local To_Be_Cloned = ReplicatedStorageFolder:WaitForChild("To-Be-Cloned")
-local ModuleScript = To_Be_Cloned:WaitForChild("ModuleScript")
-
 -------------
 -- Objects --
 -------------
 
-local Objects = script.Parent:WaitForChild("Objects")
-local PlayerProfile = require(Objects:WaitForChild("PlayerProfile"))
+local ObjectCreator = require(script.Parent:WaitForChild("ObjectCreator"))
 
 -------------
 -- Players --
@@ -41,18 +33,9 @@ end
 -- Player added
 
 local function PlayerAdded(Player)
-    local ProfileInfo = {}
-    ProfileInfo.Player = Player
-
-    local ProfileObject = PlayerProfile:New(ProfileInfo)
-
-    local Profile = ModuleScript:Clone()
-    Profile.Name = Player.Name
+    local Profile = ObjectCreator:CreatePlayerProfile(Player)
     Profile.Parent = PlayerFolder
-
     Profile = require(Profile)
-    Profile = ProfileObject
-
     Profile:Initiate()
 end
 

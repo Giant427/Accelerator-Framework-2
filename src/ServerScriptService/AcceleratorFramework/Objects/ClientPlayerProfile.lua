@@ -1,13 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
-
-------------------
--- To be cloned --
-------------------
-
-local To_Be_Cloned = ReplicatedStorageFolder:WaitForChild("To-Be-Cloned")
-local ModuleScript = To_Be_Cloned:WaitForChild("ModuleScript")
 
 ---------------------------
 -- Client player profile --
@@ -30,6 +24,8 @@ ClientPlayerProfile.RemoteEvent = nil
 -- Initiate
 
 function ClientPlayerProfile:Initiate()
+	self.Character = self.Player.Character
+
 	-- Character added
 
 	self.Player.CharacterAdded:Connect(function(Character)
@@ -44,12 +40,10 @@ function ClientPlayerProfile:Initiate()
 		self:RemoteEventRequest(Request)
 	end)
 
-	-- Character profile
+	-- Rjac profile
 
-	task.spawn(function()
-		while task.wait() do
-			self.RemoteEvent:FireServer("RjacProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
-		end
+	RunService.Heartbeat:Connect(function()
+		self.RemoteEvent:FireServer("RjacProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
 	end)
 end
 
@@ -87,4 +81,4 @@ function ClientPlayerProfileModule:New(ProfileInfo)
 	return ProfileInfo
 end
 
-return ClientPlayerProfileModule
+return ClientPlayerProfile

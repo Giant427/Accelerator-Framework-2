@@ -5,18 +5,15 @@ local LocalPlayer = Players.LocalPlayer
 
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
-------------------
--- To be cloned --
-------------------
+-- Setup client profile
 
-local To_Be_Cloned = ReplicatedStorageFolder:WaitForChild("To-Be-Cloned")
-local ModuleScript = To_Be_Cloned:WaitForChild("ModuleScript")
-
---------------------------------------
--- Setting up client player profile --
---------------------------------------
-
-local ClientProfile
+local function SetupClientProfile()
+    local ClientProfile = script.Parent.Parent.Parent.Backpack:WaitForChild("ClientPlayerProfile")
+    ClientProfile.Parent = script.Parent
+    ClientProfile = require(ClientProfile)
+    ClientProfile.Player = LocalPlayer
+    ClientProfile:Initiate()
+end
 
 -- Remote event
 
@@ -26,15 +23,7 @@ RemoteEvent.OnClientEvent:Connect(function(Request)
     -- Get client player profile
 
 	if Request == "GetClientPlayerProfile" then
-        local ClientPlayerProfile = require(script.Parent.Parent.Parent.Backpack:WaitForChild("ClientPlayerProfile"))
-
-        local ClientProfileInfo = {}
-        ClientProfileInfo.Player = LocalPlayer
-
-        ClientProfile = ClientPlayerProfile:New(ClientProfileInfo)
-        ClientPlayerProfile:GetScript():Destroy()
-
-        ClientProfile:Initiate()
+        SetupClientProfile()
 	end
 end)
 

@@ -3,20 +3,11 @@ local RunService = game:GetService("RunService")
 
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
-------------------
--- To be cloned --
-------------------
-
-local To_Be_Cloned = ReplicatedStorageFolder:WaitForChild("To-Be-Cloned")
-local ModuleScript = To_Be_Cloned:WaitForChild("ModuleScript")
-
 -------------
 -- Objects --
 -------------
 
-local Objects = script.Parent
-local ClientPlayerProfile = Objects:WaitForChild("ClientPlayerProfile")
-local Rjac = require(Objects:WaitForChild("Rjac"))
+local ObjectCreator = require(game.ServerScriptService.AcceleratorFramework:WaitForChild("ObjectCreator"))
 
 --------------------
 -- Player Profile --
@@ -48,6 +39,8 @@ PlayerProfile.RjacProfile = nil
 -- Initiate
 
 function PlayerProfile:Initiate()
+	self.Character = self.Player.Character
+
 	-- Character added
 
 	do
@@ -68,31 +61,14 @@ function PlayerProfile:Initiate()
 				self.Player:Kick("Tried to hack my game huh?")
 				return
 			end
+
 			self:RemoteEventRequest(Request, arg1)
 		end)
 	end
 
-	-- Character profile
+	-- Rjac profile
 
 	do
-		local RjacProfileInfo = {}
-		RjacProfileInfo.Player = self.Player
-		RjacProfileInfo.Character = self.Character
-
-		self.RjacProfile = Rjac:New(RjacProfileInfo)
-		self.RjacProfile:Initiate()
-		self.RjacProfile.Enabled = true
-
-		-- Update body parts
-
-		do
-			RunService.Heartbeat:Connect(function()
-				self.RjacProfile:UpdateCharacter()
-			end)
-		end
-
-		-- Body joints configurations
-
 		local Configurations = {
 			{
 				BodyPart = "Head",
@@ -115,6 +91,24 @@ function PlayerProfile:Initiate()
 				MultiplierVector = Vector3.new(0.2, 0.2, 0),
 			},
 		}
+
+		-- Create profile and complete setup
+
+		self.RjacProfile = ObjectCreator:CreateRjacProfile(self.Player)
+		self.RjacProfile.Parent = script
+		self.RjacProfile = require(self.RjacProfile)
+		self.RjacProfile:Initiate()
+		self.RjacProfile.Enabled = true
+
+		-- Update body parts
+
+		do
+			RunService.Heartbeat:Connect(function()
+				self.RjacProfile:UpdateCharacter()
+			end)
+		end
+
+		-- Body joints configurations
 
 		for _,v in pairs(Configurations) do
 			self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
@@ -139,10 +133,10 @@ function PlayerProfile:RemoteEventRequest(Request, arg1)
 			self.Player:Kick("Tried to hack my game huh?")
 			return
 		end
+
 		self.ClientProfileCreated = true
 
-		local Profile = ClientPlayerProfile:Clone()
-        Profile.Name = "ClientPlayerProfile"
+		local Profile = ObjectCreator:CreateClientPlayerProfile(self.Player)
 		Profile.Parent = self.Player.Backpack
 
 		self.RemoteEvent:FireClient(self.Player, "GetClientPlayerProfile")
@@ -173,4 +167,4 @@ function PlayerProfileModule:New(ProfileInfo)
 	return ProfileInfo
 end
 
-return PlayerProfileModule
+return PlayerProfile
