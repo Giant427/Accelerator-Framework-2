@@ -1,3 +1,11 @@
+--[[
+	Made by: GiantDefender427
+
+	Devforum Post: https://devforum.roblox.com/t/rjac-rotating-joints-according-to-camera/1601251
+
+	Accelerator Framework version
+]]
+
 ----------
 -- Rjac --
 ----------
@@ -84,7 +92,7 @@ end
 
 -- Update body position
 
-function Rjac:UpdateBodyPosition(CameraCFrame)
+function Rjac:UpdateDirection(CameraCFrame)
 	if not self.Character then
 		warn("Character does not exist for Player:", self.Player.Name)
 		return

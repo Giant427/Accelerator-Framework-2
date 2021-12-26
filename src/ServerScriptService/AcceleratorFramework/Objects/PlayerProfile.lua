@@ -144,9 +144,9 @@ function PlayerProfile:RemoteEventRequest(Request, arg1)
 
 	-- Update character profile tilt part
 
-	if Request == "RjacProfile:UpdateBodyPosition()" then
+	if Request == "RjacProfile:UpdateDirection()" then
 		self.CameraCFrame = arg1
-		self.RjacProfile:UpdateBodyPosition(arg1)
+		self.RjacProfile:UpdateDirection(arg1)
 	end
 end
 

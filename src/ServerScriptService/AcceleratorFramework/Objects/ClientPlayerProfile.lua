@@ -43,7 +43,7 @@ function ClientPlayerProfile:Initiate()
 	-- Rjac profile
 
 	RunService.Heartbeat:Connect(function()
-		self.RemoteEvent:FireServer("RjacProfile:UpdateBodyPosition()", game.Workspace.CurrentCamera.CFrame)
+		self.RemoteEvent:FireServer("RjacProfile:UpdateDirection()", game.Workspace.CurrentCamera.CFrame)
 	end)
 end
 
