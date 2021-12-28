@@ -150,21 +150,4 @@ function PlayerProfile:RemoteEventRequest(Request, arg1)
 	end
 end
 
----------------------------
--- Player profile module --
----------------------------
-
-local PlayerProfileModule = {}
-
------------------
--- Constructor --
------------------
-
-function PlayerProfileModule:New(ProfileInfo)
-    ProfileInfo = ProfileInfo or {}
-	setmetatable(ProfileInfo, PlayerProfile)
-	PlayerProfile.__index = PlayerProfile
-	return ProfileInfo
-end
-
 return PlayerProfile

@@ -40,11 +40,13 @@ function ClientPlayerProfile:Initiate()
 
 	-- Player remote event
 
-	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
+	do
+		self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
 
-    self.RemoteEvent.OnClientEvent:Connect(function(Request)
-		self:RemoteEventRequest(Request)
-	end)
+		self.RemoteEvent.OnClientEvent:Connect(function(Request)
+			self:RemoteEventRequest(Request)
+		end)
+	end
 
 	-- Rjac profile
 
@@ -54,59 +56,33 @@ function ClientPlayerProfile:Initiate()
 
 	-- Movement profile
 
-	local State = Instance.new("StringValue")
-	State.Name = "State"
+	do
+		local State = Instance.new("StringValue")
+		State.Name = "State"
 
-	local HumanoidState = Instance.new("StringValue")
-	HumanoidState.Name = "HumanoidState"
+		local HumanoidState = Instance.new("StringValue")
+		HumanoidState.Name = "HumanoidState"
 
-	self.MovementProfile = MovementHandler:Clone()
-	self.MovementProfile.Parent = script
+		self.MovementProfile = MovementHandler:Clone()
+		self.MovementProfile.Parent = script
 
-	State.Parent = self.MovementProfile
-	HumanoidState.Parent = self.MovementProfile
+		State.Parent = self.MovementProfile
+		HumanoidState.Parent = self.MovementProfile
 
-	self.MovementProfile = require(self.MovementProfile)
+		self.MovementProfile = require(self.MovementProfile)
 
-	self.MovementProfile.Player = self.Player
-	self.MovementProfile.State = State
-	self.MovementProfile.HumanoidState = HumanoidState
+		self.MovementProfile.Player = self.Player
+		self.MovementProfile.State = State
+		self.MovementProfile.HumanoidState = HumanoidState
 
-	self.MovementProfile:Initiate()
+		self.MovementProfile:Initiate()
+	end
 end
 
 -- Character added
 
 function ClientPlayerProfile:CharacterAdded(Character)
 	self.Character = Character
-end
-
--- Remote event
-
-function ClientPlayerProfile:RemoteEventRequest(Request, arg1)
-end
-
-----------------------------------
--- Client player profile module --
-----------------------------------
-
-local ClientPlayerProfileModule = {}
-
--- Get script
-
-function ClientPlayerProfileModule:GetScript()
-	return script
-end
-
------------------
--- Constructor --
------------------
-
-function ClientPlayerProfileModule:New(ProfileInfo)
-    ProfileInfo = ProfileInfo or {}
-	setmetatable(ProfileInfo, ClientPlayerProfile)
-	ClientPlayerProfile.__index = ClientPlayerProfile
-	return ProfileInfo
 end
 
 return ClientPlayerProfile

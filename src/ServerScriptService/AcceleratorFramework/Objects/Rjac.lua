@@ -204,21 +204,4 @@ do
 	end
 end
 
------------------
--- Rjac module --
------------------
-
-local RjacModule = {}
-
------------------
--- Constructor --
------------------
-
-function RjacModule:New(ProfileInfo)
-	ProfileInfo = ProfileInfo or {}
-	setmetatable(ProfileInfo, Rjac)
-	Rjac.__index = Rjac
-	return ProfileInfo
-end
-
 return Rjac
