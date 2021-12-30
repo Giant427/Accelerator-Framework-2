@@ -1,74 +1,52 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+-- Accelerator framework folder in ReplicatedStorage
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
--------------
--- Objects --
--------------
-
+-- A unified module for creating objects/classes
 local ObjectCreator = require(game.ServerScriptService.AcceleratorFramework:WaitForChild("ObjectCreator"))
 
---------------------
--- Player Profile --
---------------------
+-------------------
+-- PlayerProfile --
+-------------------
 
 local PlayerProfile = {}
 
----------------
--- Variables --
----------------
-
+-- Properties
 PlayerProfile.Player = nil
-PlayerProfile.ClientProfileCreated = false
 PlayerProfile.Character = nil
 PlayerProfile.RemoteEvent = nil
-
 PlayerProfile.CameraCFrame = CFrame.new()
 
----------------------
--- Profile Objects --
----------------------
-
+-- Profile objects
 PlayerProfile.RjacProfile = nil
 
----------------
--- Functions --
----------------
+-- Functions
 
--- Initiate
-
+-- Starter function to assemble the whole profile for functionality
 function PlayerProfile:Initiate()
 	self.Character = self.Player.Character
 
-	-- Character added
+	-- On character added
+	self.Player.CharacterAdded:Connect(function(Character)
+		self:onCharacterAdded(Character)
+	end)
 
-	do
-		self.Player.CharacterAdded:Connect(function(Character)
-			self:CharacterAdded(Character)
-		end)
-	end
-
-	-- Player remote event
-
+	-- Player remote on server event
 	do
 		self.RemoteEvent = Instance.new("RemoteEvent")
 		self.RemoteEvent.Name = self.Player.Name
 		self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
 
 		self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
-			if not Player == self.Player then
-				self.Player:Kick("Tried to hack my game huh?")
-				return
-			end
-
-			self:RemoteEventRequest(Request, arg1)
+			self:onServerEvent(Player, Request, arg1)
 		end)
 	end
 
 	-- Rjac profile
-
 	do
+		-- Configurations for rotations
 		local Configurations = {
 			{
 				BodyPart = "Head",
@@ -93,7 +71,6 @@ function PlayerProfile:Initiate()
 		}
 
 		-- Create profile and complete setup
-
 		self.RjacProfile = ObjectCreator:CreateRjacProfile(self.Player)
 		self.RjacProfile.Parent = script
 		self.RjacProfile = require(self.RjacProfile)
@@ -101,52 +78,39 @@ function PlayerProfile:Initiate()
 		self.RjacProfile.Enabled = true
 
 		-- Update body parts
+		RunService.Heartbeat:Connect(function()
+			self.RjacProfile:UpdateCharacter()
+		end)
 
-		do
-			RunService.Heartbeat:Connect(function()
-				self.RjacProfile:UpdateCharacter()
-			end)
-		end
-
-		-- Body joints configurations
-
+		-- Add body joints to rotation loop
 		for _,v in pairs(Configurations) do
 			self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
 		end
 	end
+
+	-- Client player profile
+	local ClientProfile = ObjectCreator:CreateClientPlayerProfile(self.Player)
+	ClientProfile.Parent = self.Player.Backpack
 end
 
--- Character added
-
-function PlayerProfile:CharacterAdded(Character)
+-- On character added
+function PlayerProfile:onCharacterAdded(Character)
 	self.Character = Character
 	self.RjacProfile.Character = Character
 end
 
 -- Remote event
-
-function PlayerProfile:RemoteEventRequest(Request, arg1)
-	-- Get client player profile
-
-	if Request == "GetClientPlayerProfile" then
-		if not self.ClientProfileCreated == false then
-			self.Player:Kick("Tried to hack my game huh?")
-			return
-		end
-
-		self.ClientProfileCreated = true
-
-		local Profile = ObjectCreator:CreateClientPlayerProfile(self.Player)
-		Profile.Parent = self.Player.Backpack
-
-		self.RemoteEvent:FireClient(self.Player, "GetClientPlayerProfile")
+function PlayerProfile:onServerEvent(Player, Request, arg1)
+	-- Other players should not be able to control the profile
+	if not Player == self.Player then
+		self.Player:Kick("Tried to hack my game huh?")
+		return
 	end
 
-	-- Update character profile tilt part
-
-	if Request == "RjacProfile:UpdateDirection()" then
+	-- Update rjac profile tilt direction
+	if Request == "RjacProfile:UpdateTiltDirection()" then
 		self.CameraCFrame = arg1
-		self.RjacProfile:UpdateDirection(arg1)
+		self.RjacProfile:UpdateTiltDirection(arg1)
 	end
 end
 

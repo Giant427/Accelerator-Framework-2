@@ -1,41 +1,39 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
+-- Accelerator framework folder in ReplicatedStorage
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
---------------------------
--- Remote events folder --
---------------------------
+-- Player specific remote events go here
 
-local RemoteEventsFolder = Instance.new("Folder")
-RemoteEventsFolder.Name = "RemoteEventsFolder"
-RemoteEventsFolder.Parent = ReplicatedStorageFolder
+local RemoteEventsFolder = ReplicatedStorageFolder:FindFirstChild("RemoteEventsFolder")
 
--------------
--- Objects --
--------------
+if not RemoteEventsFolder then
+    -- Remote events fodler doesnt exist, time to make one
+    RemoteEventsFolder = Instance.new("Folder")
+    RemoteEventsFolder.Name = "RemoteEventsFolder"
+    RemoteEventsFolder.Parent = ReplicatedStorageFolder
+end
 
+-- A unified module for creating objects/classes
 local ObjectCreator = require(script.Parent:WaitForChild("ObjectCreator"))
 
--------------
--- Players --
--------------
+-- Player specific server profile's go here
+local PlayersFolder = script.Parent:FindFirstChild("PlayersFolder")
 
-local PlayerFolder = script.Parent:FindFirstChild("PlayerFolder")
-
-if not PlayerFolder then
-    PlayerFolder = Instance.new("Folder")
-    PlayerFolder.Name = "PlayerFolder"
-    PlayerFolder.Parent = script.Parent
+if not PlayersFolder then
+    -- Players fodler doesnt exist, time to make one
+    PlayersFolder = Instance.new("Folder")
+    PlayersFolder.Name = "PlayersFolder"
+    PlayersFolder.Parent = script.Parent
 end
 
 -- Player added
-
-local function PlayerAdded(Player)
+local function onPlayerAdded(Player)
     local Profile = ObjectCreator:CreatePlayerProfile(Player)
-    Profile.Parent = PlayerFolder
+    Profile.Parent = PlayersFolder
     Profile = require(Profile)
     Profile:Initiate()
 end
 
-Players.PlayerAdded:Connect(PlayerAdded)
+Players.PlayerAdded:Connect(onPlayerAdded)

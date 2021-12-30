@@ -1,20 +1,13 @@
--------------
--- Objects --
--------------
-
+-- Objects
 local Objects = script.Parent:WaitForChild("Objects")
 local PlayerProfile = Objects:WaitForChild("PlayerProfile")
 local ClientPlayerProfile = Objects:WaitForChild("ClientPlayerProfile")
 local Rjac = Objects:WaitForChild("Rjac")
 
---------------------
--- OBJECT CREATOR --
---------------------
-
+-- Object creator
 local ObjectCreator = {}
 
--- Player profile
-
+-- Creating player profile
 function ObjectCreator:CreatePlayerProfile(Player)
     local Profile = PlayerProfile:Clone()
     local ProfileObject = require(Profile)
@@ -22,8 +15,7 @@ function ObjectCreator:CreatePlayerProfile(Player)
     return Profile
 end
 
--- Client player profile
-
+-- Creating client player profile
 function ObjectCreator:CreateClientPlayerProfile(Player)
     local Profile = ClientPlayerProfile:Clone()
     local ProfileObject = require(Profile)
@@ -31,8 +23,7 @@ function ObjectCreator:CreateClientPlayerProfile(Player)
     return Profile
 end
 
--- Rjac profile
-
+-- Creating rjac profile
 function ObjectCreator:CreateRjacProfile(Player)
     local Profile = Rjac:Clone()
     local ProfileObject = require(Profile)

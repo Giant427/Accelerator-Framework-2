@@ -1,22 +1,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--------------
--- FOLDERS --
--------------
-
+-- Accelerator framework folder in ReplicatedStorage
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
-local ResourcesFolder = ReplicatedStorageFolder:WaitForChild("GunResources")
+local GunResourcesFolder = ReplicatedStorageFolder:WaitForChild("GunResources")
 
 ---------------------------
--- GUN RESOURCES HANDLER --
+-- Gun resources handler --
 ---------------------------
 
 local GunResourcesHandler = {}
 
 -- Get a particular resource
-
 function GunResourcesHandler:GetResource(RESOURCE_TYPE, GUN_NAME)
-    local ResourceContainer = ResourcesFolder:FindFirstChild(RESOURCE_TYPE)
+    local ResourceContainer = GunResourcesFolder:FindFirstChild(RESOURCE_TYPE)
 
     if not ResourceContainer then return end
 
@@ -30,7 +26,6 @@ function GunResourcesHandler:GetResource(RESOURCE_TYPE, GUN_NAME)
 end
 
 -- Get gun resources
-
 function GunResourcesHandler:GetGunRecources(GUN_NAME)
     local RecoilPattern = self:GetResource("RecoilPattern", GUN_NAME)
     local ViewmodelOffset = self:GetResource("ViewmodelOffset", GUN_NAME)
@@ -46,11 +41,8 @@ function GunResourcesHandler:GetGunRecources(GUN_NAME)
 end
 
 -- Get Viewmodel
-
 function GunResourcesHandler:GetViewmodel()
-    local Viewmodel = ResourcesFolder:FindFirstChild("Viewmodel")
-
-    return Viewmodel
+    return GunResourcesFolder:FindFirstChild("Viewmodel")
 end
 
 return GunResourcesHandler

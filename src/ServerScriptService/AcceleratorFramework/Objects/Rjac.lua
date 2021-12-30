@@ -12,56 +12,37 @@
 
 local Rjac = {}
 
----------------
--- Variables --
----------------
-
+-- Properties
 Rjac.Player = nil
 Rjac.Character = nil
-
 Rjac.Configurations = {}
-Rjac.Direction = Vector3.new(0, 0, 0)
+Rjac.TiltDirection = Vector3.new(0, 0, 0)
 Rjac.Enabled = false
 
----------------
--- Functions --
----------------
+-- Functions
 
--- Initiate
-
+-- Starter function to assemble the whole profile for functionality
 function Rjac:Initiate()
 	self.Character = self.Player.Character
 
-	-- Character added
-
+	-- Character  added
 	self.Player.CharacterAdded:Connect(function(Character)
-		self:CharacterAdded(Character)
+		self:onCharacterAdded(Character)
 	end)
 end
 
--- Character added
+-- On character added
 
-function Rjac:CharacterAdded(Character)
+function Rjac:onCharacterAdded(Character)
+	-- Wait till the character appearance has fully loaded for proper joint offsets
     Character:WaitForChild("Humanoid")
 	self.Character = Character
 
-	-- Replace body joint offsets
-
-	for _,v in pairs(self.Configurations) do
-		local BodyPart = self.Character:FindFirstChild(v.BodyPart)
-		local BodyJoint
-		if BodyPart then
-			BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
-
-			if BodyJoint then
-				v.JointOffset = BodyJoint.C0
-			end
-		end
-	end
+	-- Reset joint offset configurations
+	self:ResetJointOffsets()
 end
 
 -- Update character
-
 function Rjac:UpdateCharacter()
 	if not self.Enabled then return end
 
@@ -74,7 +55,7 @@ function Rjac:UpdateCharacter()
 		-- Drops unnecesarry errors when character is being removed or player is leaving, kind of stupid to add "if"s every now and then, "pcall" is better
 
         pcall(function()
-            local JointValue = CFrame.Angles(math.asin(self.Direction.Y) * v.MultiplierVector.X, -math.asin(self.Direction.X) * v.MultiplierVector.Y, math.asin(self.Direction.Z) * v.MultiplierVector.Z)
+            local JointValue = CFrame.Angles(math.asin(self.TiltDirection.Y) * v.MultiplierVector.X, -math.asin(self.TiltDirection.X) * v.MultiplierVector.Y, math.asin(self.TiltDirection.Z) * v.MultiplierVector.Z)
 
             local BodyPart = self.Player.Character:FindFirstChild(v.BodyPart)
             local BodyJoint
@@ -90,28 +71,26 @@ function Rjac:UpdateCharacter()
 	end
 end
 
--- Update body position
-
-function Rjac:UpdateDirection(CameraCFrame)
+-- Update tilt direction
+function Rjac:UpdateTiltDirection(CameraCFrame)
 	if not self.Character then
 		warn("Character does not exist for Player:", self.Player.Name)
 		return
 	end
 
-	local Value = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
+	local TiltDirection = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
 
-	if Value.Y < -0.965 then
-		Value = Vector3.new(Value.X, -0.965, Value.Z)
+	-- If TiltDirection.Y is less than -0.965, character shows weird behaviour
+	if TiltDirection.Y < -0.965 then
+		TiltDirection = Vector3.new(TiltDirection.X, -0.965, TiltDirection.Z)
 	end
 
-	self.Direction = Value
+	self.TiltDirection = TiltDirection
 end
 
 -- Add/Remove body joint
-
 do
 	-- Add body joint
-
 	function Rjac:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
@@ -120,7 +99,6 @@ do
 		end
 
 		-- Create configuration
-
 		local Configuration = {
 			BodyPart = BodyPart,
 			BodyJoint = BodyJoint,
@@ -128,15 +106,13 @@ do
 			MultiplierVector = MultiplierVector,
 		}
 
-        -- Insert Configuration
-
 		table.insert(self.Configurations, Configuration)
 
 		-- Set joint offset
-
 		if self.Character then
 			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
 			local CharacterBodyJoint
+
 			if CharacterBodyPart then
 				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
 
@@ -148,10 +124,8 @@ do
 	end
 
 	-- Remove body joint
-
 	function Rjac:RemoveBodyJoint(BodyPart, BodyJoint)
 		-- Remove and store configuration
-
 		local Configuration
 
 		for i,v in pairs(self.Configurations) do
@@ -163,10 +137,10 @@ do
 		end
 
 		-- Reset joint offset in character
-
 		if self.Character then
 			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
 			local CharacterBodyJoint
+
 			if CharacterBodyPart then
 				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
 
@@ -181,8 +155,22 @@ end
 -- Body joint properties
 
 do
-	-- Update body joint offset
+	-- Reset joint offset configurations
+	function Rjac:ResetJointOffsets()
+		for _,v in pairs(self.Configurations) do
+			local BodyPart = self.Character:FindFirstChild(v.BodyPart)
+			local BodyJoint
 
+			if BodyPart then
+				BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
+				if BodyJoint then
+					v.JointOffset = BodyJoint.C0
+				end
+			end
+		end
+	end
+
+	-- Update body joint offset
 	function Rjac:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
@@ -193,7 +181,6 @@ do
 	end
 
 	-- Update body joint multiplier vector
-
 	function Rjac:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
 		for _,v in pairs(self.Configurations) do
 			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then

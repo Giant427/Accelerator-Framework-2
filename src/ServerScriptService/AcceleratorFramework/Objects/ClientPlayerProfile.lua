@@ -1,8 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+-- Movement handler for character movement abilities: Crouch, Prone, Sprint, Slide
 local MovementHandler = game.ReplicatedStorage:WaitForChild("MovementHandler"):WaitForChild("MovementHandler")
 
+-- Accelerator framework folder in ReplicatedStorage
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 
 ---------------------------
@@ -11,35 +13,26 @@ local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFrame
 
 local ClientPlayerProfile = {}
 
----------------
--- Variables --
----------------
-
+-- Properties
 ClientPlayerProfile.Player = nil
 ClientPlayerProfile.Character = nil
 ClientPlayerProfile.RemoteEvent = nil
 
 -- Movement handler
-
 ClientPlayerProfile.MovementProfile = nil
 
----------------
--- Functions --
----------------
+-- Functions
 
--- Initiate
-
+-- Starter function to assemble the whole profile for functionality
 function ClientPlayerProfile:Initiate()
 	self.Character = self.Player.Character
 
-	-- Character added
-
+	-- On character added
 	self.Player.CharacterAdded:Connect(function(Character)
-		self:CharacterAdded(Character)
+		self:onCharacterAdded(Character)
 	end)
 
-	-- Player remote event
-
+	-- Remote event
 	do
 		self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
 
@@ -49,16 +42,14 @@ function ClientPlayerProfile:Initiate()
 	end
 
 	-- Rjac profile
-
 	RunService.Heartbeat:Connect(function()
-		self.RemoteEvent:FireServer("RjacProfile:UpdateDirection()", game.Workspace.CurrentCamera.CFrame)
+		self.RemoteEvent:FireServer("RjacProfile:UpdateTiltDirection()", game.Workspace.CurrentCamera.CFrame)
 	end)
 
 	-- Movement profile
-
 	do
-		local State = Instance.new("StringValue")
-		State.Name = "State"
+		local MovementState = Instance.new("StringValue")
+		MovementState.Name = "MovementState"
 
 		local HumanoidState = Instance.new("StringValue")
 		HumanoidState.Name = "HumanoidState"
@@ -66,23 +57,27 @@ function ClientPlayerProfile:Initiate()
 		self.MovementProfile = MovementHandler:Clone()
 		self.MovementProfile.Parent = script
 
-		State.Parent = self.MovementProfile
+		MovementState.Parent = self.MovementProfile
 		HumanoidState.Parent = self.MovementProfile
 
 		self.MovementProfile = require(self.MovementProfile)
 
 		self.MovementProfile.Player = self.Player
-		self.MovementProfile.State = State
+		self.MovementProfile.MovementState = MovementState
 		self.MovementProfile.HumanoidState = HumanoidState
 
 		self.MovementProfile:Initiate()
 	end
 end
 
--- Character added
-
-function ClientPlayerProfile:CharacterAdded(Character)
+-- On character added
+function ClientPlayerProfile:onCharacterAdded(Character)
 	self.Character = Character
+end
+
+-- On client event
+function ClientPlayerProfile:onClientEvent(Request)
+
 end
 
 return ClientPlayerProfile
