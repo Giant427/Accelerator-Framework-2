@@ -32,7 +32,6 @@ function Rjac:Initiate()
 end
 
 -- On character added
-
 function Rjac:onCharacterAdded(Character)
 	-- Wait till the character appearance has fully loaded for proper joint offsets
     Character:WaitForChild("Humanoid")
@@ -88,105 +87,98 @@ function Rjac:UpdateTiltDirection(CameraCFrame)
 	self.TiltDirection = TiltDirection
 end
 
--- Add/Remove body joint
-do
-	-- Add body joint
-	function Rjac:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
-		for _,v in pairs(self.Configurations) do
-			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-				return
-			end
-		end
-
-		-- Create configuration
-		local Configuration = {
-			BodyPart = BodyPart,
-			BodyJoint = BodyJoint,
-			JointOffset = CFrame.new(),
-			MultiplierVector = MultiplierVector,
-		}
-
-		table.insert(self.Configurations, Configuration)
-
-		-- Set joint offset
-		if self.Character then
-			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
-			local CharacterBodyJoint
-
-			if CharacterBodyPart then
-				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
-
-				if CharacterBodyJoint then
-                    self:UpdateBodyJointOffset(Configuration.BodyPart, Configuration.BodyJoint, CharacterBodyJoint.C0)
-				end
-			end
+-- Add body joint
+function Rjac:AddBodyJoint(BodyPart, BodyJoint, MultiplierVector)
+	for _,v in pairs(self.Configurations) do
+		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+			return
 		end
 	end
 
-	-- Remove body joint
-	function Rjac:RemoveBodyJoint(BodyPart, BodyJoint)
-		-- Remove and store configuration
-		local Configuration
+	-- Create configuration
+	local Configuration = {
+		BodyPart = BodyPart,
+		BodyJoint = BodyJoint,
+		JointOffset = CFrame.new(),
+		MultiplierVector = MultiplierVector,
+	}
 
-		for i,v in pairs(self.Configurations) do
-			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-				Configuration = v
-				table.remove(self.Configurations, i)
-				break
-			end
-		end
+	table.insert(self.Configurations, Configuration)
 
-		-- Reset joint offset in character
-		if self.Character then
-			local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
-			local CharacterBodyJoint
+	-- Set joint offset
+	if self.Character then
+		local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
+		local CharacterBodyJoint
 
-			if CharacterBodyPart then
-				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
+		if CharacterBodyPart then
+			CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
 
-				if CharacterBodyJoint then
-					CharacterBodyJoint.C0 = Configuration.JointOffset
-				end
+			if CharacterBodyJoint then
+				self:UpdateBodyJointOffset(Configuration.BodyPart, Configuration.BodyJoint, CharacterBodyJoint.C0)
 			end
 		end
 	end
 end
 
--- Body joint properties
+-- Remove body joint
+function Rjac:RemoveBodyJoint(BodyPart, BodyJoint)
+	-- Remove and store configuration
+	local Configuration
 
-do
-	-- Reset joint offset configurations
-	function Rjac:ResetJointOffsets()
-		for _,v in pairs(self.Configurations) do
-			local BodyPart = self.Character:FindFirstChild(v.BodyPart)
-			local BodyJoint
-
-			if BodyPart then
-				BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
-				if BodyJoint then
-					v.JointOffset = BodyJoint.C0
-				end
-			end
+	for i,v in pairs(self.Configurations) do
+		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+			Configuration = v
+			table.remove(self.Configurations, i)
+			break
 		end
 	end
 
-	-- Update body joint offset
-	function Rjac:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
-		for _,v in pairs(self.Configurations) do
-			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-				v.JointOffset = JointOffset
-				break
+	-- Reset joint offset in character
+	if self.Character then
+		local CharacterBodyPart = self.Character:FindFirstChild(Configuration.BodyPart)
+		local CharacterBodyJoint
+
+		if CharacterBodyPart then
+			CharacterBodyJoint = CharacterBodyPart:FindFirstChild(Configuration.BodyJoint)
+
+			if CharacterBodyJoint then
+				CharacterBodyJoint.C0 = Configuration.JointOffset
 			end
 		end
 	end
+end
 
-	-- Update body joint multiplier vector
-	function Rjac:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
-		for _,v in pairs(self.Configurations) do
-			if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
-				v.MultiplierVector = MultiplierVector
-				break
+-- Reset joint offset configurations
+function Rjac:ResetJointOffsets()
+	for _,v in pairs(self.Configurations) do
+		local BodyPart = self.Character:FindFirstChild(v.BodyPart)
+		local BodyJoint
+
+		if BodyPart then
+			BodyJoint = BodyPart:FindFirstChild(v.BodyJoint)
+			if BodyJoint then
+				v.JointOffset = BodyJoint.C0
 			end
+		end
+	end
+end
+
+-- Update body joint offset
+function Rjac:UpdateBodyJointOffset(BodyPart, BodyJoint, JointOffset)
+	for _,v in pairs(self.Configurations) do
+		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+			v.JointOffset = JointOffset
+			break
+		end
+	end
+end
+
+-- Update body joint multiplier vector
+function Rjac:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVector)
+	for _,v in pairs(self.Configurations) do
+		if v.BodyPart == BodyPart and v.BodyJoint == BodyJoint then
+			v.MultiplierVector = MultiplierVector
+			break
 		end
 	end
 end

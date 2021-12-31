@@ -20,67 +20,53 @@ local MovementHandler = {}
 -- Properties
 
 -- Reourses
-do
-	MovementHandler.ReplicatedStorageDirectory = game.ReplicatedStorage:WaitForChild("MovementHandler")
-	MovementHandler.AnimationFolder = MovementHandler.ReplicatedStorageDirectory:WaitForChild("Animations")
-	MovementHandler.MovementState = MovementHandler.ReplicatedStorageDirectory:WaitForChild("MovementState")
-	MovementHandler.HumanoidState = MovementHandler.ReplicatedStorageDirectory:WaitForChild("HumanoidState")
-end
+MovementHandler.ReplicatedStorageDirectory = game.ReplicatedStorage:WaitForChild("MovementHandler")
+MovementHandler.AnimationFolder = MovementHandler.ReplicatedStorageDirectory:WaitForChild("Animations")
+MovementHandler.MovementState = MovementHandler.ReplicatedStorageDirectory:WaitForChild("MovementState")
+MovementHandler.HumanoidState = MovementHandler.ReplicatedStorageDirectory:WaitForChild("HumanoidState")
 
 -- Local player
-do
-	MovementHandler.Player = nil
-	MovementHandler.Character = nil
-	MovementHandler.Humanoid = nil
-	MovementHandler.Animator = nil
-end
+MovementHandler.Player = nil
+MovementHandler.Character = nil
+MovementHandler.Humanoid = nil
+MovementHandler.Animator = nil
 
 -- Camera offset tweens
-do
-	MovementHandler.CameraOffsetTweens = {}
-	MovementHandler.CameraOffsetTweens.Default = nil
-	MovementHandler.CameraOffsetTweens.Crouch = nil
-	MovementHandler.CameraOffsetTweens.Prone = nil
-	MovementHandler.CameraOffsetTweens.Slide = nil
-end
+MovementHandler.CameraOffsetTweens = {}
+MovementHandler.CameraOffsetTweens.Default = nil
+MovementHandler.CameraOffsetTweens.Crouch = nil
+MovementHandler.CameraOffsetTweens.Prone = nil
+MovementHandler.CameraOffsetTweens.Slide = nil
 
 -- States
-do
-	MovementHandler.States = {}
-	MovementHandler.States.Sprinting = false
-	MovementHandler.States.Crouching = false
-	MovementHandler.States.Proning = false
-	MovementHandler.States.Sliding = false
-end
+MovementHandler.States = {}
+MovementHandler.States.Sprinting = false
+MovementHandler.States.Crouching = false
+MovementHandler.States.Proning = false
+MovementHandler.States.Sliding = false
 
 -- Configurations
-do
-	MovementHandler.Configurations = {}
-	MovementHandler.Configurations.WalkSpeed = 16
-	MovementHandler.Configurations.SprintSpeed = 30
-	MovementHandler.Configurations.CrouchSpeed = 6
-	MovementHandler.Configurations.ProneSpeed = 4
-end
+MovementHandler.Configurations = {}
+MovementHandler.Configurations.WalkSpeed = 16
+MovementHandler.Configurations.SprintSpeed = 30
+MovementHandler.Configurations.CrouchSpeed = 6
+MovementHandler.Configurations.ProneSpeed = 4
 
 -- Animations
-do
-	MovementHandler.Animations = {}
-	MovementHandler.Animations.CrouchIdle = MovementHandler.AnimationFolder.CrouchIdle
-	MovementHandler.Animations.CrouchWalk = MovementHandler.AnimationFolder.CrouchWalk
-	MovementHandler.Animations.ProneIdle = MovementHandler.AnimationFolder.ProneIdle
-	MovementHandler.Animations.ProneWalk = MovementHandler.AnimationFolder.ProneWalk
-	MovementHandler.Animations.Slide = MovementHandler.AnimationFolder.Slide
-end
+MovementHandler.Animations = {}
+MovementHandler.Animations.CrouchIdle = MovementHandler.AnimationFolder.CrouchIdle
+MovementHandler.Animations.CrouchWalk = MovementHandler.AnimationFolder.CrouchWalk
+MovementHandler.Animations.ProneIdle = MovementHandler.AnimationFolder.ProneIdle
+MovementHandler.Animations.ProneWalk = MovementHandler.AnimationFolder.ProneWalk
+MovementHandler.Animations.Slide = MovementHandler.AnimationFolder.Slide
 
 -- Animation tracks
-do
-	MovementHandler.AnimationTracks = {}
-	MovementHandler.AnimationTracks.CrouchIdle = nil
-	MovementHandler.AnimationTracks.CrouchWalk = nil
-	MovementHandler.AnimationTracks.ProneIdle = nil
-	MovementHandler.AnimationTracks.ProneWalk = nil
-	MovementHandler.AnimationTracks.Slide = nil
-end
+MovementHandler.AnimationTracks = {}
+MovementHandler.AnimationTracks.CrouchIdle = nil
+MovementHandler.AnimationTracks.CrouchWalk = nil
+MovementHandler.AnimationTracks.ProneIdle = nil
+MovementHandler.AnimationTracks.ProneWalk = nil
+MovementHandler.AnimationTracks.Slide = nil
 
 -- Functions
 
@@ -89,7 +75,7 @@ function MovementHandler:Lerp(a, b, t)
 	return a * (1 - t) + (b * t)
 end
 
--- Starter function to assemble the whole profile for functionality --
+-- Assemble the profile for functionality
 function MovementHandler:Initiate()
 	self.Character = self.Player.Character
 

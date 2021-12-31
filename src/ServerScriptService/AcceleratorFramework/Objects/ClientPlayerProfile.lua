@@ -33,13 +33,11 @@ function ClientPlayerProfile:Initiate()
 	end)
 
 	-- Remote event
-	do
-		self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
+	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
 
-		self.RemoteEvent.OnClientEvent:Connect(function(Request)
-			self:RemoteEventRequest(Request)
-		end)
-	end
+	self.RemoteEvent.OnClientEvent:Connect(function(Request)
+		self:RemoteEventRequest(Request)
+	end)
 
 	-- Rjac profile
 	RunService.Heartbeat:Connect(function()
@@ -47,27 +45,25 @@ function ClientPlayerProfile:Initiate()
 	end)
 
 	-- Movement profile
-	do
-		local MovementState = Instance.new("StringValue")
-		MovementState.Name = "MovementState"
+	local MovementState = Instance.new("StringValue")
+	MovementState.Name = "MovementState"
 
-		local HumanoidState = Instance.new("StringValue")
-		HumanoidState.Name = "HumanoidState"
+	local HumanoidState = Instance.new("StringValue")
+	HumanoidState.Name = "HumanoidState"
 
-		self.MovementProfile = MovementHandler:Clone()
-		self.MovementProfile.Parent = script
+	self.MovementProfile = MovementHandler:Clone()
+	self.MovementProfile.Parent = script
 
-		MovementState.Parent = self.MovementProfile
-		HumanoidState.Parent = self.MovementProfile
+	MovementState.Parent = self.MovementProfile
+	HumanoidState.Parent = self.MovementProfile
 
-		self.MovementProfile = require(self.MovementProfile)
+	self.MovementProfile = require(self.MovementProfile)
 
-		self.MovementProfile.Player = self.Player
-		self.MovementProfile.MovementState = MovementState
-		self.MovementProfile.HumanoidState = HumanoidState
+	self.MovementProfile.Player = self.Player
+	self.MovementProfile.MovementState = MovementState
+	self.MovementProfile.HumanoidState = HumanoidState
 
-		self.MovementProfile:Initiate()
-	end
+	self.MovementProfile:Initiate()
 end
 
 -- On character added

@@ -34,58 +34,54 @@ function PlayerProfile:Initiate()
 	end)
 
 	-- Player remote on server event
-	do
-		self.RemoteEvent = Instance.new("RemoteEvent")
-		self.RemoteEvent.Name = self.Player.Name
-		self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
+	self.RemoteEvent = Instance.new("RemoteEvent")
+	self.RemoteEvent.Name = self.Player.Name
+	self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
 
-		self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
-			self:onServerEvent(Player, Request, arg1)
-		end)
-	end
+	self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
+		self:onServerEvent(Player, Request, arg1)
+	end)
 
 	-- Rjac profile
-	do
-		-- Configurations for rotations
-		local Configurations = {
-			{
-				BodyPart = "Head",
-				BodyJoint = "Neck",
-				MultiplierVector = Vector3.new(0.8, 0.8, 0),
-			},
-			{
-				BodyPart = "RightUpperArm",
-				BodyJoint = "RightShoulder",
-				MultiplierVector = Vector3.new(0.8, 0, 0),
-			},
-			{
-				BodyPart = "LeftUpperArm",
-				BodyJoint = "LeftShoulder",
-				MultiplierVector = Vector3.new(0.8, 0, 0),
-			},
-			{
-				BodyPart = "UpperTorso",
-				BodyJoint = "Waist",
-				MultiplierVector = Vector3.new(0.2, 0.2, 0),
-			},
-		}
+	-- Configurations for rotations
+	local Configurations = {
+		{
+			BodyPart = "Head",
+			BodyJoint = "Neck",
+			MultiplierVector = Vector3.new(0.8, 0.8, 0),
+		},
+		{
+			BodyPart = "RightUpperArm",
+			BodyJoint = "RightShoulder",
+			MultiplierVector = Vector3.new(0.8, 0, 0),
+		},
+		{
+			BodyPart = "LeftUpperArm",
+			BodyJoint = "LeftShoulder",
+			MultiplierVector = Vector3.new(0.8, 0, 0),
+		},
+		{
+			BodyPart = "UpperTorso",
+			BodyJoint = "Waist",
+			MultiplierVector = Vector3.new(0.2, 0.2, 0),
+		},
+	}
 
-		-- Create profile and complete setup
-		self.RjacProfile = ObjectCreator:CreateRjacProfile(self.Player)
-		self.RjacProfile.Parent = script
-		self.RjacProfile = require(self.RjacProfile)
-		self.RjacProfile:Initiate()
-		self.RjacProfile.Enabled = true
+	-- Create profile and complete setup
+	self.RjacProfile = ObjectCreator:CreateRjacProfile(self.Player)
+	self.RjacProfile.Parent = script
+	self.RjacProfile = require(self.RjacProfile)
+	self.RjacProfile:Initiate()
+	self.RjacProfile.Enabled = true
 
-		-- Update body parts
-		RunService.Heartbeat:Connect(function()
-			self.RjacProfile:UpdateCharacter()
-		end)
+	-- Update body parts
+	RunService.Heartbeat:Connect(function()
+		self.RjacProfile:UpdateCharacter()
+	end)
 
-		-- Add body joints to rotation loop
-		for _,v in pairs(Configurations) do
-			self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
-		end
+	-- Add body joints to rotation loop
+	for _,v in pairs(Configurations) do
+		self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
 	end
 
 	-- Client player profile
