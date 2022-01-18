@@ -13,13 +13,19 @@ local GunResourcesHandler = {}
 -- Returns a resource for a gun, an object or a table if resource in module script
 function GunResourcesHandler:GetResource(ResourceType, GunName)
     local ResourceContainer = GunResourcesFolder:FindFirstChild(ResourceType)
-
-    if not ResourceContainer then return end
+    if not ResourceContainer then
+        error("Resource type "..ResourceType.." doesn't exist")
+        return
+    end
 
     local Resource = ResourceContainer:FindFirstChild(GunName)
-
     if ResourceContainer:IsA("ModuleScript") then
         Resource = require(ResourceContainer)[GunName]
+    end
+
+    if not Resource then
+        error("Resource "..ResourceType.." doesn't exist for gun "..GunName)
+        return
     end
 
     return Resource

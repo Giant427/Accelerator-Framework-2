@@ -25,21 +25,18 @@ ClientPlayerProfile.MovementProfile = nil
 
 -- Starter function to assemble the whole profile for functionality
 function ClientPlayerProfile:Initiate()
+	-- Saftey measures incase character has already loaded
 	self.Character = self.Player.Character
-
-	-- On character added
 	self.Player.CharacterAdded:Connect(function(Character)
 		self:onCharacterAdded(Character)
 	end)
 
 	-- Remote event
 	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
-
 	self.RemoteEvent.OnClientEvent:Connect(function(Request)
 		self:RemoteEventRequest(Request)
 	end)
 
-	-- Rjac profile
 	RunService.Heartbeat:Connect(function()
 		self.RemoteEvent:FireServer("RjacProfile:UpdateTiltDirection()", game.Workspace.CurrentCamera.CFrame)
 	end)
@@ -47,10 +44,10 @@ function ClientPlayerProfile:Initiate()
 	-- Movement profile
 	local MovementState = Instance.new("StringValue")
 	MovementState.Name = "MovementState"
-
 	local HumanoidState = Instance.new("StringValue")
 	HumanoidState.Name = "HumanoidState"
 
+	-- Creating MovementProfile
 	self.MovementProfile = MovementHandler:Clone()
 	self.MovementProfile.Parent = script
 

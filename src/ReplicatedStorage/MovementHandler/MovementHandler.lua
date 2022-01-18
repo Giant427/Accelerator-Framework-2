@@ -11,13 +11,8 @@ local RunService = game:GetService("RunService")
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 
-----------------------
--- MOVEMENT HANDLER --
-----------------------
-
+-- MovementHandler
 local MovementHandler = {}
-
--- Properties
 
 -- Reourses
 MovementHandler.ReplicatedStorageDirectory = game.ReplicatedStorage:WaitForChild("MovementHandler")
@@ -68,8 +63,6 @@ MovementHandler.AnimationTracks.ProneIdle = nil
 MovementHandler.AnimationTracks.ProneWalk = nil
 MovementHandler.AnimationTracks.Slide = nil
 
--- Functions
-
 -- Lerp
 function MovementHandler:Lerp(a, b, t)
 	return a * (1 - t) + (b * t)
@@ -77,27 +70,21 @@ end
 
 -- Assemble the profile for functionality
 function MovementHandler:Initiate()
+	-- Saftey measures incase character has already loaded
 	self.Character = self.Player.Character
-
-	-- On character added
+	self:GetPlayerInput()
 	self.Player.CharacterAdded:Connect(function(Model)
 		self:onCharacterAdded(Model)
 	end)
-
-	-- Get player input duhh
-	self:GetPlayerInput()
 end
 
 -- On character added
 function MovementHandler:onCharacterAdded(Model)
-	-- Character properties
 	self.Humanoid = Model:WaitForChild("Humanoid")
 	self.Character = Model
 	self.Animator = self.Humanoid:FindFirstChildOfClass("Animator")
-
-	-- Reload animations
+	-- Reload animations for new Humanoid
 	self:LoadAnimationTracks()
-
 	-- Reset humanoid event listeners
 	self.Humanoid.StateChanged:Connect(function(OldState, NewState)
 		self:onHumanoidStateChanged(OldState, NewState)
@@ -108,8 +95,7 @@ function MovementHandler:onCharacterAdded(Model)
 	self.Humanoid.Jumping:Connect(function(Jumping)
 		self:onHumanoidJumping(Jumping)
 	end)
-
-	-- Reset camera offset tweens
+	-- Reset camera offset tweens for new Humanoid
 	self:ResetCameraOffsetTweens()
 end
 
@@ -130,58 +116,58 @@ function MovementHandler:ResetCameraOffsetTweens()
 	self.CameraOffsetTweens.Slide = TweenService:Create(self.Humanoid, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {CameraOffset = Vector3.new(0, -2, 0)})
 end
 
--- Humanoid state changed
+-- Humanoid events
 function MovementHandler:onHumanoidStateChanged(OldState, NewState)
+	-- Data to be used by external scripts
 	self.HumanoidState.Value = tostring(NewState)
 end
 
--- Humanoid running
 function MovementHandler:onHumanoidRunning(Speed)
 	-- Crouching
 	if Speed == 0 then
 		self.AnimationTracks.CrouchWalk:Stop()
 	elseif self.States.Crouching then
-		self.AnimationTracks.CrouchWalk:Play()
+		-- Play animation only if it isnt playing, to avoid restart of animation
+		if not self.AnimationTracks.CrouchWalk.IsPlaying then
+			self.AnimationTracks.CrouchWalk:Play()
+		end
+		-- Adjust the speed of animation to match Character WalkSpeed
 		self.AnimationTracks.CrouchWalk:AdjustSpeed(Speed / self.AnimationTracks.CrouchWalk.Length)
 	end
-
 	-- Proning
 	if Speed == 0 then
 		self.AnimationTracks.ProneWalk:Stop()
 	elseif self.States.Proning then
-		self.AnimationTracks.ProneWalk:Play()
+		-- Play animation only if it isnt playing, to avoid restart of animation
+		if not self.AnimationTracks.ProneWalk.IsPlaying then
+			self.AnimationTracks.ProneWalk:Play()
+		end
+		-- Adjust the speed of animation to match Character WalkSpeed
 		self.AnimationTracks.ProneWalk:AdjustSpeed(Speed / self.AnimationTracks.ProneWalk.Length)
 	end
 end
 
--- Humnanoid jumping
 function MovementHandler:onHumanoidJumping(Jumping)
 	if Jumping then
 		if self.States.Crouching then
 			self:StopCrouching()
-			self.Humanoid.WalkSpeed = self.Configurations.WalkSpeed
 		end
 		if self.States.Proning then
 			self:StopProning()
-			self.Humanoid.WalkSpeed = self.Configurations.WalkSpeed
 		end
 	end
 end
 
 -- Sprint
 function MovementHandler:StartSprinting()
-	-- If the player is crouching, cancel the crouch
 	if self.States.Crouching then
 		self:StopCrouching()
 	end
-
-	-- If the player is proning, cancel the prone
 	if self.States.Proning then
 		self:StopCrouching()
 	end
-
-	-- If the player is sliding, don't change the State
 	if not self.States.Sliding then
+		-- Player is sliding, don't overwrite the MovementState
 		self.MovementState.Value = "Sprinting"
 	end
 
@@ -193,18 +179,14 @@ function MovementHandler:StopSprinting()
 	self.States.Sprinting = false
 	self.Humanoid.WalkSpeed = self.Configurations.WalkSpeed
 
-	-- Don't change the state if the player is sliding
 	if not self.States.Sliding then
+		-- Player is sliding, don't overwrite the MovementState
 		self.MovementState.Value = ""
 	end
 end
 
 -- Crouch
 function MovementHandler:StartCrouching()
-	if self.States.Proning then
-		self:StopProning()
-	end
-
 	self.MovementState.Value = "Crouching"
 	self.States.Crouching = true
 	self.AnimationTracks.CrouchIdle:Play()
@@ -223,7 +205,6 @@ end
 
 -- Prone
 function MovementHandler:StartProning()
-	self:StopCrouching()
 	self.MovementState.Value = "Proning"
 	self.States.Proning = true
 	self.AnimationTracks.ProneIdle:Play()
@@ -254,6 +235,7 @@ function MovementHandler:StartSliding()
 	self.Humanoid.JumpPower = 0
 	self.Humanoid.JumpHeight = 0
 
+	-- Slide the character
 	while math.abs(num - 5) > 0.01 do
 		num = self:Lerp(num, 5, 0.1)
 		local rec = num / 10
@@ -267,29 +249,34 @@ function MovementHandler:StartSliding()
 	self.States.Sliding = false
 	self.AnimationTracks.Slide:Stop()
 	self.CameraOffsetTweens.Default:Play()
-
 	if self.States.Sprinting then
+		-- Sprinting state is still true, start sprinting
 		self:StartSprinting()
 	end
 end
 
--- Process input
 function MovementHandler:ProcessInput(ActionName, InputState, InputObject)
 	if InputObject.KeyCode == Enum.KeyCode.LeftShift then
 		if InputState == Enum.UserInputState.Begin then
+			-- Shift button pressing, start sprinting
 			self:StartSprinting()
 		else
+			-- Shift button not pressing, stop sprinting
 			self:StopSprinting()
 		end
 	end
-
 	if InputObject.KeyCode == Enum.KeyCode.C and InputState == Enum.UserInputState.Begin and self.States.Sliding == false then
 		if self.States.Sprinting then
+			-- Tried to crouch but player is sprinting
 			self:StartSliding()
 		else
 			if self.States.Crouching then
+				-- Player is crouching, stop crouching and start proning
+				self:StopCrouching()
 				self:StartProning()
 			else
+				-- Player is proning, stop proning and start crouching
+				self:StopProning()
 				self:StartCrouching()
 			end
 		end
