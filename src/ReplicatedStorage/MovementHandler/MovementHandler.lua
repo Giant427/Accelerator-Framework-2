@@ -2,8 +2,6 @@
 	Made by: GiantDefender427
 
 	Devforum Post: https://devforum.roblox.com/t/movementhandler-crouch-sprint-slide-prone/1539379
-
-	Accelerator Framework version
 ]]
 
 -- Service dependencies
