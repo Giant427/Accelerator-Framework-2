@@ -1,33 +1,24 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- Accelerator framework folder in ReplicatedStorage
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 local GunResourcesFolder = ReplicatedStorageFolder:WaitForChild("GunResources")
 
----------------------------
--- Gun resources handler --
----------------------------
-
 local GunResourcesHandler = {}
 
--- Returns a resource for a gun, an object or a table if resource in module script
+-- Returns a resource for a gun, an object or a table if resource is in module script
 function GunResourcesHandler:GetResource(ResourceType, GunName)
     local ResourceContainer = GunResourcesFolder:FindFirstChild(ResourceType)
     if not ResourceContainer then
         error("Resource type "..ResourceType.." doesn't exist")
         return
     end
-
-    local Resource = ResourceContainer:FindFirstChild(GunName)
+    local Resource = ResourceContainer:FindFirstChild(GunName):Clone()
     if ResourceContainer:IsA("ModuleScript") then
         Resource = require(ResourceContainer)[GunName]
     end
-
     if not Resource then
         error("Resource "..ResourceType.." doesn't exist for gun "..GunName)
         return
     end
-
     return Resource
 end
 
@@ -48,7 +39,7 @@ end
 
 -- Get Viewmodel
 function GunResourcesHandler:GetViewmodel()
-    return GunResourcesFolder:FindFirstChild("Viewmodel")
+    return GunResourcesFolder:FindFirstChild("Viewmodel"):Clone()
 end
 
 return GunResourcesHandler

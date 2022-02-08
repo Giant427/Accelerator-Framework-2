@@ -1,0 +1,3 @@
+local ClientPlayerProfile = {}
+
+return ClientPlayerProfile

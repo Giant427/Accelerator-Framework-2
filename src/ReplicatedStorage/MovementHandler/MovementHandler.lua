@@ -83,9 +83,7 @@ function MovementHandler:onCharacterAdded(Model)
 	self.Humanoid = Model:WaitForChild("Humanoid")
 	self.Character = Model
 	self.Animator = self.Humanoid:FindFirstChildOfClass("Animator")
-	-- Reload animations for new Humanoid
 	self:LoadAnimationTracks()
-	-- Reset humanoid event listeners
 	self.Humanoid.StateChanged:Connect(function(OldState, NewState)
 		self:onHumanoidStateChanged(OldState, NewState)
 	end)
@@ -95,7 +93,6 @@ function MovementHandler:onCharacterAdded(Model)
 	self.Humanoid.Jumping:Connect(function(Jumping)
 		self:onHumanoidJumping(Jumping)
 	end)
-	-- Reset camera offset tweens for new Humanoid
 	self:ResetCameraOffsetTweens()
 end
 
@@ -117,33 +114,32 @@ function MovementHandler:ResetCameraOffsetTweens()
 end
 
 -- Humanoid events
-function MovementHandler:onHumanoidStateChanged(OldState, NewState)
+function MovementHandler:onHumanoidStateChanged(_, NewState)
 	-- Data to be used by external scripts
 	self.HumanoidState.Value = tostring(NewState)
 end
 
 function MovementHandler:onHumanoidRunning(Speed)
-	-- Crouching
 	if Speed == 0 then
 		self.AnimationTracks.CrouchWalk:Stop()
-	elseif self.States.Crouching then
-		-- Play animation only if it isnt playing, to avoid restart of animation
-		if not self.AnimationTracks.CrouchWalk.IsPlaying then
-			self.AnimationTracks.CrouchWalk:Play()
-		end
-		-- Adjust the speed of animation to match Character WalkSpeed
-		self.AnimationTracks.CrouchWalk:AdjustSpeed(Speed / self.AnimationTracks.CrouchWalk.Length)
-	end
-	-- Proning
-	if Speed == 0 then
 		self.AnimationTracks.ProneWalk:Stop()
-	elseif self.States.Proning then
-		-- Play animation only if it isnt playing, to avoid restart of animation
-		if not self.AnimationTracks.ProneWalk.IsPlaying then
-			self.AnimationTracks.ProneWalk:Play()
+	else
+		if self.States.Crouching then
+			-- Play animation only if it isnt playing, to avoid restart of animation
+			if not self.AnimationTracks.CrouchWalk.IsPlaying then
+				self.AnimationTracks.CrouchWalk:Play()
+			end
+			-- Adjust the speed of animation to match Character WalkSpeed
+			self.AnimationTracks.CrouchWalk:AdjustSpeed(Speed / self.AnimationTracks.CrouchWalk.Length)
 		end
-		-- Adjust the speed of animation to match Character WalkSpeed
-		self.AnimationTracks.ProneWalk:AdjustSpeed(Speed / self.AnimationTracks.ProneWalk.Length)
+		if self.States.Proning then
+			-- Play animation only if it isnt playing, to avoid restart of animation
+			if not self.AnimationTracks.ProneWalk.IsPlaying then
+				self.AnimationTracks.ProneWalk:Play()
+			end
+			-- Adjust the speed of animation to match Character WalkSpeed
+			self.AnimationTracks.ProneWalk:AdjustSpeed(Speed / self.AnimationTracks.ProneWalk.Length)
+		end
 	end
 end
 
@@ -170,7 +166,6 @@ function MovementHandler:StartSprinting()
 		-- Player is sliding, don't overwrite the MovementState
 		self.MovementState.Value = "Sprinting"
 	end
-
 	self.States.Sprinting = true
 	self.Humanoid.WalkSpeed = self.Configurations.SprintSpeed
 end
@@ -178,7 +173,6 @@ end
 function MovementHandler:StopSprinting()
 	self.States.Sprinting = false
 	self.Humanoid.WalkSpeed = self.Configurations.WalkSpeed
-
 	if not self.States.Sliding then
 		-- Player is sliding, don't overwrite the MovementState
 		self.MovementState.Value = ""
@@ -227,14 +221,12 @@ function MovementHandler:StartSliding()
 	local JumpPower = self.Humanoid.JumpPower
 	local JumpHeight = self.Humanoid.JumpHeight
 	local num = 0
-
 	self.MovementState.Value = "Slide"
 	self.States.Sliding = true
 	self.AnimationTracks.Slide:Play()
 	self.CameraOffsetTweens.Slide:Play()
 	self.Humanoid.JumpPower = 0
 	self.Humanoid.JumpHeight = 0
-
 	-- Slide the character
 	while math.abs(num - 5) > 0.01 do
 		num = self:Lerp(num, 5, 0.1)
@@ -242,7 +234,6 @@ function MovementHandler:StartSliding()
 		HumanoidRootPart.CFrame = HumanoidRootPart.CFrame * CFrame.new(0, 0, -rec)
 		RunService.RenderStepped:Wait()
 	end
-
 	self.Humanoid.JumpPower = JumpPower
 	self.Humanoid.JumpHeight = JumpHeight
 	self.MovementState.Value = ""
@@ -255,13 +246,12 @@ function MovementHandler:StartSliding()
 	end
 end
 
-function MovementHandler:ProcessInput(ActionName, InputState, InputObject)
+-- Player input
+function MovementHandler:ProcessInput(_, InputState, InputObject)
 	if InputObject.KeyCode == Enum.KeyCode.LeftShift then
 		if InputState == Enum.UserInputState.Begin then
-			-- Shift button pressing, start sprinting
 			self:StartSprinting()
 		else
-			-- Shift button not pressing, stop sprinting
 			self:StopSprinting()
 		end
 	end
@@ -271,11 +261,9 @@ function MovementHandler:ProcessInput(ActionName, InputState, InputObject)
 			self:StartSliding()
 		else
 			if self.States.Crouching then
-				-- Player is crouching, stop crouching and start proning
 				self:StopCrouching()
 				self:StartProning()
 			else
-				-- Player is proning, stop proning and start crouching
 				self:StopProning()
 				self:StartCrouching()
 			end
@@ -283,19 +271,25 @@ function MovementHandler:ProcessInput(ActionName, InputState, InputObject)
 	end
 end
 
--- Get player input
 function MovementHandler:GetPlayerInput()
 	local function PlayerInput(ActionName, InputState, InputObject)
 		self:ProcessInput(ActionName, InputState, InputObject)
 	end
-
 	ContextActionService:BindAction("Sprint", PlayerInput, true, Enum.KeyCode.LeftShift)
-	ContextActionService:SetTitle("Sprint", "Sprint")
-	ContextActionService:SetPosition(("Sprint"), UDim2.new(1, -90, 1, -150))
-
 	ContextActionService:BindAction("Crouch", PlayerInput, true, Enum.KeyCode.C)
 	ContextActionService:SetTitle("Crouch", "Crouch")
+	ContextActionService:SetTitle("Sprint", "Sprint")
 	ContextActionService:SetPosition(("Crouch"), UDim2.new(1, -160, 1, -60))
+	ContextActionService:SetPosition(("Sprint"), UDim2.new(1, -90, 1, -150))
 end
 
-return MovementHandler
+-- Constructor
+local MovementHandlerModule = {}
+function MovementHandlerModule:New(ProfileInfo)
+	ProfileInfo = ProfileInfo or {}
+	setmetatable(ProfileInfo, MovementHandler)
+	MovementHandler.__index = MovementHandler
+	return ProfileInfo
+end
+
+return MovementHandlerModule

@@ -1,14 +1,15 @@
 local Players = game:GetService("Players")
-
--- Local player
 local LocalPlayer = Players.LocalPlayer
+
+local ClientProfile = script.Parent:WaitForChild("ClientProfile")
 
 -- Setup client profile
 local function SetupClientProfile()
-    local ClientProfile = script.Parent.Parent.Parent:WaitForChild("Backpack").ClientPlayerProfile
-    ClientProfile.Parent = script.Parent
-    ClientProfile = require(ClientProfile)
-    ClientProfile.Player = LocalPlayer
+    local ClientPlayerProfile = script.Parent:WaitForChild("ClientPlayerProfile")
+    local ProfileInfo = {}
+    ProfileInfo.Player = LocalPlayer
+    ClientProfile = require(ClientPlayerProfile):New(ProfileInfo)
+    ClientPlayerProfile:Destroy()
     ClientProfile:Initiate()
 end
 
