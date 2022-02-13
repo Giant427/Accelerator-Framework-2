@@ -11,18 +11,21 @@ PlayerProfile.Character = nil
 PlayerProfile.RemoteEvent = nil
 PlayerProfile.CameraCFrame = CFrame.new()
 PlayerProfile.RjacProfile = nil
+PlayerProfile.Enabled = false
+PlayerProfile.onCharacterAddedConnection = nil
+PlayerProfile.onServerEventConnection = nil
 
 -- Starter function to assemble the whole profile for functionality
 function PlayerProfile:Initiate()
 	self.Character = self.Player.Character
-	self.Player.CharacterAdded:Connect(function(Character)
+	self.onCharacterAddedConnection = self.Player.CharacterAdded:Connect(function(Character)
 		self:onCharacterAdded(Character)
 	end)
 	-- Remote event
 	self.RemoteEvent = Instance.new("RemoteEvent")
 	self.RemoteEvent.Name = self.Player.Name
 	self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
-	self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
+	self.onServerEventConnection = self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
 		self:onServerEvent(Player, Request, arg1)
 	end)
 	-- Rjac
@@ -52,11 +55,15 @@ function PlayerProfile:Initiate()
 	self.RjacProfile:Initiate()
 	self.RjacProfile.Enabled = true
 	RunService.Heartbeat:Connect(function()
+		if not self.Enabled then return end
 		self.RjacProfile:UpdateCharacter()
 	end)
 	for _,v in pairs(RjacConfigurations) do
 		self.RjacProfile:AddBodyJoint(v.BodyPart, v.BodyJoint, v.MultiplierVector)
 	end
+	-- Enable
+	self.Enabled = true
+	self.RjacProfile.Enabled = true
 end
 
 -- On character added
@@ -67,16 +74,40 @@ end
 
 -- Remote event
 function PlayerProfile:onServerEvent(Player, Request, arg1)
+	if not self.Enabled then return end
 	-- Other players should not be able to control the profile
 	if not Player == self.Player then
 		self.Player:Kick("Tried to hack my game huh?")
 		return
 	end
-
 	-- Update rjac profile tilt direction
 	if Request == "RjacProfile:UpdateTiltDirection()" then
 		self.CameraCFrame = arg1
 		self.RjacProfile:UpdateTiltDirection(arg1)
+	end
+	-- Destroy class
+	if Request == ":Destroy()" then
+		self:Destroy()
+	end
+end
+
+-- Destructor
+function PlayerProfile:Destroy()
+	self.RemoteEvent:FireClient(self.Player, ":Destroy()")
+   	self.RjacProfile:Destroy()
+	self.RemoteEvent:Destroy()
+	self.onCharacterAddedConnection:Disconnect()
+	self.onServerEventConnection:Disconnect()
+	for i,_ in pairs(self) do
+		self[i] = nil
+	end
+	for i,_ in pairs(getmetatable(self)) do
+		getmetatable(self)[i] = nil
+	end
+	for i,v in pairs(require(game.ServerScriptService.AcceleratorFramework.PlayerProfiles)) do
+		if v.Player == self.Player then
+			require(game.ServerScriptService.AcceleratorFramework.PlayerProfiles)[i] = nil
+		end
 	end
 end
 

@@ -1,7 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
-local RemoteEventsFolder = ReplicatedStorageFolder:FindFirstChild("RemoteEventsFolder")
 local ObjectCreator = require(script.Parent:WaitForChild("ObjectCreator"))
 
 -- Player specific server profile's go here

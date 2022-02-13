@@ -31,6 +31,12 @@ MovementHandler.CameraOffsetTweens.Crouch = nil
 MovementHandler.CameraOffsetTweens.Prone = nil
 MovementHandler.CameraOffsetTweens.Slide = nil
 
+-- Event connections
+MovementHandler.onCharacterAddedConnection = nil
+MovementHandler.onHumanoidStateChangeddConnection = nil
+MovementHandler.onHumanoidRunningConnection = nil
+MovementHandler.onHumanoidJumpingConnection = nil
+
 -- States
 MovementHandler.States = {}
 MovementHandler.States.Sprinting = false
@@ -39,6 +45,7 @@ MovementHandler.States.Proning = false
 MovementHandler.States.Sliding = false
 
 -- Configurations
+MovementHandler.Enabled = false
 MovementHandler.Configurations = {}
 MovementHandler.Configurations.WalkSpeed = 16
 MovementHandler.Configurations.SprintSpeed = 30
@@ -71,7 +78,7 @@ function MovementHandler:Initiate()
 	-- Saftey measures incase character has already loaded
 	self.Character = self.Player.Character
 	self:GetPlayerInput()
-	self.Player.CharacterAdded:Connect(function(Model)
+	self.onCharacterAddedConnection = self.Player.CharacterAdded:Connect(function(Model)
 		self:onCharacterAdded(Model)
 	end)
 end
@@ -82,13 +89,13 @@ function MovementHandler:onCharacterAdded(Model)
 	self.Character = Model
 	self.Animator = self.Humanoid:FindFirstChildOfClass("Animator")
 	self:LoadAnimationTracks()
-	self.Humanoid.StateChanged:Connect(function(OldState, NewState)
+	self.onHumanoidStateChangedConnection = self.Humanoid.StateChanged:Connect(function(OldState, NewState)
 		self:onHumanoidStateChanged(OldState, NewState)
 	end)
-	self.Humanoid.Running:Connect(function(Speed)
+	self.onHumanoidRunningConnection = self.Humanoid.Running:Connect(function(Speed)
 		self:onHumanoidRunning(Speed)
 	end)
-	self.Humanoid.Jumping:Connect(function(Jumping)
+	self.onHumanoidJumpingConnection = self.Humanoid.Jumping:Connect(function(Jumping)
 		self:onHumanoidJumping(Jumping)
 	end)
 	self:ResetCameraOffsetTweens()
@@ -246,6 +253,7 @@ end
 
 -- Player input
 function MovementHandler:ProcessInput(_, InputState, InputObject)
+	if not self.Enabled then return end
 	if InputObject.KeyCode == Enum.KeyCode.LeftShift then
 		if InputState == Enum.UserInputState.Begin then
 			self:StartSprinting()
@@ -279,6 +287,29 @@ function MovementHandler:GetPlayerInput()
 	ContextActionService:SetTitle("Sprint", "Sprint")
 	ContextActionService:SetPosition(("Crouch"), UDim2.new(1, -160, 1, -60))
 	ContextActionService:SetPosition(("Sprint"), UDim2.new(1, -90, 1, -150))
+end
+
+-- Destructor
+function MovementHandler:Destroy()
+	self.Enabled = false
+	for i,_ in pairs(self.States) do
+		self.States[i] = false
+	end
+	self:StopProning()
+	self:StopCrouching()
+	self:StopSprinting()
+	self.onCharacterAddedConnection:Disconnect()
+	self.onHumanoidStateChangedConnection:Disconnect()
+	self.onHumanoidRunningConnection:Disconnect()
+	self.onHumanoidJumpingConnection:Disconnect()
+	ContextActionService:UnbindAction("Sprint")
+	ContextActionService:UnbindAction("Crouch")
+	for i,_ in pairs(self) do
+		self[i] = nil
+	end
+	for i,_ in pairs(getmetatable(self)) do
+		getmetatable(self)[i] = nil
+	end
 end
 
 -- Constructor

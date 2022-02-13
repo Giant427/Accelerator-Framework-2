@@ -14,11 +14,12 @@ Rjac.Character = nil
 Rjac.Configurations = {}
 Rjac.TiltDirection = Vector3.new(0, 0, 0)
 Rjac.Enabled = false
+Rjac.onCharacterAddedConnection = nil
 
 -- Starter function to assemble the whole profile for functionality
 function Rjac:Initiate()
 	self.Character = self.Player.Character
-	self.Player.CharacterAdded:Connect(function(Character)
+	self.onCharacterAddedConnection = self.Player.CharacterAdded:Connect(function(Character)
 		self:onCharacterAdded(Character)
 	end)
 end
@@ -147,6 +148,31 @@ function Rjac:UpdateBodyJointMultiplierVector(BodyPart, BodyJoint, MultiplierVec
 			v.MultiplierVector = MultiplierVector
 			break
 		end
+	end
+end
+
+-- Destructor
+function Rjac:Destroy()
+	self.Enabled = false
+	self.onCharacterAddedConnection:Disconnect()
+	for _,v in pairs(self.Configurations) do
+		if self.Character then
+			local CharacterBodyPart = self.Character:FindFirstChild(v.BodyPart)
+			local CharacterBodyJoint
+			if CharacterBodyPart then
+				CharacterBodyJoint = CharacterBodyPart:FindFirstChild(v.BodyJoint)
+
+				if CharacterBodyJoint then
+					CharacterBodyJoint.C0 = v.JointOffset
+				end
+			end
+		end
+	end
+	for i,_ in pairs(self) do
+		self[i] = nil
+	end
+	for i,_ in pairs(getmetatable(self)) do
+		getmetatable(self)[i] = nil
 	end
 end
 
