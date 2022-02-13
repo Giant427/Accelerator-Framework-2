@@ -10,6 +10,7 @@ ClientPlayerProfile.Player = nil
 ClientPlayerProfile.Character = nil
 ClientPlayerProfile.RemoteEvent = nil
 ClientPlayerProfile.MovementProfile = nil
+ClientPlayerProfile.ViewmodelProfile = nil
 
 -- Starter function to assemble the whole profile for functionality
 function ClientPlayerProfile:Initiate()
@@ -38,9 +39,20 @@ function ClientPlayerProfile:Initiate()
 	MovementProfileInfo.MovementState = MovementState
 	MovementProfileInfo.HumanoidState = HumanoidState
 	self.MovementProfile = MovementHandler:New(MovementProfileInfo)
-	self.MovementProfile.MovementState = MovementState
-	self.MovementProfile.HumanoidState = HumanoidState
 	self.MovementProfile:Initiate()
+	-- Viewmodel profile
+	local ProfileInfo = {}
+	ProfileInfo.Player = self.Player
+	self.ViewmodelProfile = require(script.Parent.ViewmodelProfile):New(ProfileInfo)
+	self.ViewmodelProfile.Enabled = true
+	self.ViewmodelProfile:Initiate()
+	-- Script clean up
+	--[[
+		Destroying ClientMain just completely disables everything in the Profile :(
+		self.Player.PlayerScripts.AcceleratorFramework.ClientMain:Destroy()
+	]]
+	self.Player.PlayerScripts.AcceleratorFramework.ClientPlayerProfile:Destroy()
+	self.Player.PlayerScripts.AcceleratorFramework.ViewmodelProfile:Destroy()
 end
 
 -- On character added
