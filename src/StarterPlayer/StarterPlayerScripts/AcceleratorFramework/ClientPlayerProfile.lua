@@ -28,7 +28,7 @@ function ClientPlayerProfile:Initiate()
 		self:onClientEvent(Request)
 	end)
 	task.spawn(function()
-		while task.wait(0.1) and self.Enabled do
+		while task.wait(0.01) and self.Enabled do
 			self.RemoteEvent:FireServer("RjacProfile:UpdateTiltDirection()", game.Workspace.CurrentCamera.CFrame)
 		end
 	end)
