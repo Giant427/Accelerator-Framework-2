@@ -44,7 +44,6 @@ end
 function ViewmodelProfile:DestroyViewmodel()
     if self.Viewmodel then
         self.Viewmodel:Destroy()
-    
    end
 end
 
@@ -65,18 +64,17 @@ function ViewmodelProfile:Update(DeltaTime)
     local Sway = self:UpdateSway(DeltaTime)
     local Strafe = self:UpdateStrafe(DeltaTime, CharacterHumanoid, CharacterHumanoidRootPart)
     ViewmodelHumanoidRootPart.CFrame = CameraCFrame
-    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X * 0.5, Bobble.Y * 0.5, 0))
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X * 0.7, Bobble.Y * 0.7, 0))
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.5, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Sway.Y, Sway.X, Sway.Z)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
-    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X, Bobble.Y * 0.5, 0)
 end
 
 -- Bob viewmodel
 function ViewmodelProfile:UpdateBob(DeltaTime, CharacterHumanoidRootPart)
-    local Addition = 4
-    local Speed = 1
-	local Modifier = 0.05
-    local BobValue = math.sin(tick() * Addition * Speed) * Modifier
+    local Speed = 8
+	local Modifier = 0.1
+    local BobValue = math.sin(tick() * Speed) * Modifier
     local BobSpringShove = Vector3.new(BobValue, BobValue, BobValue)
     self.BobSpring:shove((BobSpringShove / 25) * DeltaTime * 60 * CharacterHumanoidRootPart.AssemblyLinearVelocity.Magnitude)
     local Bobble = self.BobSpring:update(DeltaTime)
