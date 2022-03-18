@@ -35,10 +35,7 @@ end
 -- Update character
 function Rjac:UpdateCharacter()
 	if not self.Enabled then return end
-	if not self.Character then
-		warn("Character does not exist for Player:", self.Player.Name)
-		return
-	end
+	if not self.Character then return end
 	for _,v in pairs(self.Configurations) do
 		-- Drops unnecesarry errors when character is being removed or player is leaving, kind of stupid to add "if"s every now and then, "pcall" is better
         pcall(function()
@@ -57,10 +54,7 @@ end
 
 -- Update tilt direction
 function Rjac:UpdateTiltDirection(CameraCFrame)
-	if not self.Character then
-		warn("Character does not exist for Player:", self.Player.Name)
-		return
-	end
+	if not self.Character then return end
 	local TiltDirection = self.Character.HumanoidRootPart.CFrame:toObjectSpace(CameraCFrame).LookVector
 	-- If TiltDirection.Y is less than -0.965, character shows weird behaviour
 	if TiltDirection.Y < -0.965 then

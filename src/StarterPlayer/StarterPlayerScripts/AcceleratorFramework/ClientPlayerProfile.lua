@@ -22,7 +22,7 @@ function ClientPlayerProfile:Initiate()
 		self:onCharacterAdded(Character)
 	end)
 	-- Remote event
-	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.Name)
+	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.UserId)
 	self.onServerEventConnection = self.RemoteEvent.OnClientEvent:Connect(function(Request)
 		if not self.Enabled then return end
 		self:onClientEvent(Request)

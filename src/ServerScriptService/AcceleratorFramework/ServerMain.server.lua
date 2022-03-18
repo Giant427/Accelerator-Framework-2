@@ -6,8 +6,8 @@ local PlayerProfiles = require(script.Parent:FindFirstChild("PlayerProfiles"))
 
 -- On player added
 local function onPlayerAdded(Player)
-    PlayerProfiles[Player.Name] = ObjectCreator:CreatePlayerProfile(Player)
-    local Profile = PlayerProfiles[Player.Name]
+    PlayerProfiles[Player.UserId] = ObjectCreator:CreatePlayerProfile(Player)
+    local Profile = PlayerProfiles[Player.UserId]
     Profile:Initiate()
 end
 
