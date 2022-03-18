@@ -11,9 +11,11 @@ function GunResourcesHandler:GetResource(ResourceType, GunName)
         error("Resource type "..ResourceType.." doesn't exist")
         return
     end
-    local Resource = ResourceContainer:FindFirstChild(GunName):Clone()
+    local Resource
     if ResourceContainer:IsA("ModuleScript") then
         Resource = require(ResourceContainer)[GunName]
+    else
+        Resource = ResourceContainer:FindFirstChild(GunName):Clone()
     end
     if not Resource then
         error("Resource "..ResourceType.." doesn't exist for gun "..GunName)

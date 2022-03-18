@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
+local GunResourcesHandler = require(ReplicatedStorageFolder:WaitForChild("Modules"):WaitForChild("GunResourcesHandler"))
 local MovementHandler = require(game.ReplicatedStorage:WaitForChild("MovementHandler"):WaitForChild("MovementHandler"))
 
 local ClientPlayerProfile = {}
@@ -10,6 +11,8 @@ ClientPlayerProfile.Character = nil
 ClientPlayerProfile.RemoteEvent = nil
 ClientPlayerProfile.MovementProfile = nil
 ClientPlayerProfile.ViewmodelProfile = nil
+ClientPlayerProfile.Inventory = {}
+ClientPlayerProfile.GunProfileClient = {}
 ClientPlayerProfile.Enabled = false
 ClientPlayerProfile.onCharacterAddedConnection = nil
 ClientPlayerProfile.onClientEventConnection = nil
@@ -23,9 +26,9 @@ function ClientPlayerProfile:Initiate()
 	end)
 	-- Remote event
 	self.RemoteEvent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder"):WaitForChild(self.Player.UserId)
-	self.onServerEventConnection = self.RemoteEvent.OnClientEvent:Connect(function(Request)
+	self.onServerEventConnection = self.RemoteEvent.OnClientEvent:Connect(function(Request, arg1)
 		if not self.Enabled then return end
-		self:onClientEvent(Request)
+		self:onClientEvent(Request, arg1)
 	end)
 	task.spawn(function()
 		while task.wait(0.01) and self.Enabled do
@@ -50,6 +53,10 @@ function ClientPlayerProfile:Initiate()
 	ProfileInfo.Player = self.Player
 	self.ViewmodelProfile = require(script.Parent.ViewmodelProfile):New(ProfileInfo)
 	self.ViewmodelProfile:Initiate()
+	-- Gun profile client
+	for i,v in pairs(require(self.Player.PlayerScripts.AcceleratorFramework.GunProfileClient)) do
+		self.GunProfileClient[i] = v
+	end
 	-- Enable
 	self.Enabled = true
 	self.MovementProfile.Enabled = true
@@ -69,11 +76,25 @@ function ClientPlayerProfile:onCharacterAdded(Character)
 end
 
 -- On client event
-function ClientPlayerProfile:onClientEvent(Request)
+function ClientPlayerProfile:onClientEvent(Request, arg1)
 	-- Destroy class
 	if Request == ":Destroy()" then
 		self:Destroy()
 	end
+	-- Add gun
+	if Request == ":AddGun(GunName)" then
+		local GunName = arg1
+		self:AddGun(GunName)
+	end
+end
+
+-- Add gun to inventory
+function ClientPlayerProfile:AddGun(GunName)
+	local Metadata = GunResourcesHandler:GetResource("Metadata", GunName)
+	Metadata.Player = self.Player
+	local GunProfileClient = self.GunProfileClient:New(Metadata)
+	self.Inventory[#self.Inventory + 1] = GunProfileClient
+	getmetatable(self.Inventory[1])["New"] = nil
 end
 
 -- Destructor

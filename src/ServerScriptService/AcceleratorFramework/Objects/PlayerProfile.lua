@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
+local GunResourcesHandler = require(ReplicatedStorageFolder:WaitForChild("Modules"):WaitForChild("GunResourcesHandler"))
 local ObjectCreator = require(game.ServerScriptService.AcceleratorFramework:WaitForChild("ObjectCreator"))
 
 local PlayerProfile = {}
@@ -11,6 +12,7 @@ PlayerProfile.Character = nil
 PlayerProfile.RemoteEvent = nil
 PlayerProfile.CameraCFrame = CFrame.new()
 PlayerProfile.RjacProfile = nil
+PlayerProfile.Inventory = {}
 PlayerProfile.Enabled = false
 PlayerProfile.onCharacterAddedConnection = nil
 PlayerProfile.onServerEventConnection = nil
@@ -23,7 +25,7 @@ function PlayerProfile:Initiate()
 	end)
 	-- Remote event
 	self.RemoteEvent = Instance.new("RemoteEvent")
-	self.RemoteEvent.Name = self.Player.Name
+	self.RemoteEvent.Name = self.Player.UserId
 	self.RemoteEvent.Parent = ReplicatedStorageFolder:WaitForChild("RemoteEventsFolder")
 	self.onServerEventConnection = self.RemoteEvent.OnServerEvent:Connect(function(Player, Request, arg1)
 		self:onServerEvent(Player, Request, arg1)
@@ -89,6 +91,15 @@ function PlayerProfile:onServerEvent(Player, Request, arg1)
 	if Request == ":Destroy()" then
 		self:Destroy()
 	end
+end
+
+-- Add gun to inventory
+function PlayerProfile:AddGun(GunName)
+	local Metadata = GunResourcesHandler:GetResource("Metadata", GunName)
+	Metadata.Player = self.Player
+	self.RemoteEvent:FireClient(self.Player, ":AddGun(GunName)", GunName)
+	local GunProfileServer = ObjectCreator:CreateGunProfileServer(Metadata)
+	self.Inventory[#self.Inventory + 1] = GunProfileServer
 end
 
 -- Destructor
