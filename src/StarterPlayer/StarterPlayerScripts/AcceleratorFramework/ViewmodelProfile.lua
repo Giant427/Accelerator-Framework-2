@@ -74,6 +74,7 @@ function ViewmodelProfile:Update(DeltaTime)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
 end
 
+-- Camera can be animated :o
 function ViewmodelProfile:AnimateCamera(ViewmodelHumanoidRootPart, ViewmodelCamPart)
     local NewCameraCFrame = ViewmodelCamPart.CFrame:ToObjectSpace(ViewmodelHumanoidRootPart.CFrame)
     if OldCameraCFrame then
