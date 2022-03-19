@@ -7,6 +7,7 @@ local GunProfileClient = {}
 GunProfileClient.Player = nil
 GunProfileClient.Character = nil
 GunProfileClient.GunName = ""
+GunProfileClient.InventorySlot = ""
 GunProfileClient.Parent = {}
 GunProfileClient.ViewmodelOffset = CFrame.new()
 GunProfileClient.RemoteEvent = nil
@@ -49,6 +50,8 @@ function GunProfileClient:Equip()
 	self.Parent:PlaySound(self.Parent.ViewmodelProfile.Viewmodel[self.GunName], "Handle", "Equip")
 	self.Parent.ViewmodelProfile:ChangeTransparency(0)
 	self.Animations.Equip:Play()
+	self.Parent.UiProfile:UpdateGunGui(self.GunName, self.MagAmmo, self.MaxAmmo)
+	self.Parent.UiProfile:EquipInventorySlot(self.InventorySlot)
 	task.wait(self.Animations.Equip.Length)
 end
 

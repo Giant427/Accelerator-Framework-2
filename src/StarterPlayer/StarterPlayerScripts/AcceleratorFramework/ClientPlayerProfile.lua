@@ -9,11 +9,14 @@ local ClientPlayerProfile = {}
 ClientPlayerProfile.Player = nil
 ClientPlayerProfile.Character = nil
 ClientPlayerProfile.RemoteEvent = nil
-ClientPlayerProfile.MovementProfile = nil
-ClientPlayerProfile.ViewmodelProfile = nil
-ClientPlayerProfile.Inventory = {}
-ClientPlayerProfile.GunProfileClient = {}
 ClientPlayerProfile.Enabled = false
+ClientPlayerProfile.MovementProfile = {}
+ClientPlayerProfile.ViewmodelProfile = {}
+ClientPlayerProfile.UiProfile = {}
+ClientPlayerProfile.GunProfileClient = {}
+ClientPlayerProfile.Inventory = {}
+ClientPlayerProfile.InventoryMaxSlots = 3
+ClientPlayerProfile.EquippedGunSlot = false
 ClientPlayerProfile.onCharacterAddedConnection = nil
 ClientPlayerProfile.onClientEventConnection = nil
 
@@ -54,6 +57,11 @@ function ClientPlayerProfile:Initiate()
 	self.ViewmodelProfile = require(script.Parent.ViewmodelProfile):New(ProfileInfo)
 	self.ViewmodelProfile:Initiate()
 	self.ViewmodelProfile:ChangeTransparency(1)
+	-- Ui profile
+	ProfileInfo = {}
+	ProfileInfo.Player = self.Player
+	self.UiProfile = require(script.Parent.UiProfile):New(ProfileInfo)
+	self.UiProfile:Initiate()
 	-- Gun profile client
 	for i,v in pairs(require(self.Player.PlayerScripts.AcceleratorFramework.GunProfileClient)) do
 		self.GunProfileClient[i] = v
@@ -69,6 +77,7 @@ function ClientPlayerProfile:Initiate()
 	]]
 	self.Player.PlayerScripts.AcceleratorFramework.ClientPlayerProfile:Destroy()
 	self.Player.PlayerScripts.AcceleratorFramework.ViewmodelProfile:Destroy()
+	self.Player.PlayerScripts.AcceleratorFramework.UiProfile:Destroy()
 end
 
 -- On character added
@@ -91,14 +100,18 @@ end
 
 -- Add gun to inventory
 function ClientPlayerProfile:AddGun(GunName)
+	if #self.Inventory + 1 > self.InventoryMaxSlots then return end
 	local Metadata = GunResourcesHandler:GetResource(GunName, "Metadata")
 	Metadata.Player = self.Player
 	Metadata.Character = self.Character
 	Metadata.GunName = GunName
+	Metadata.InventorySlot = #self.Inventory + 1
 	Metadata.Parent = self
 	local GunProfileClient = self.GunProfileClient:New(Metadata)
+	getmetatable(GunProfileClient)["New"] = nil
+	self.EquippedGunSlot = #self.Inventory + 1
 	self.Inventory[#self.Inventory + 1] = GunProfileClient
-	getmetatable(self.Inventory[1])["New"] = nil
+	self.UiProfile:UpdateInventorySlot(#self.Inventory, GunName)
 	GunProfileClient:Initiate()
 	GunProfileClient:Equip()
 end
