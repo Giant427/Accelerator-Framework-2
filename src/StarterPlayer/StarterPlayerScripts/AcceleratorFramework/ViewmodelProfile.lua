@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 local Viewmodel_Prototype = ReplicatedStorageFolder:WaitForChild("GunResources"):WaitForChild("Viewmodel")
 local Spring = require(ReplicatedStorageFolder:WaitForChild("Modules"):WaitForChild("Spring"))
+local OldCameraCFrame = CFrame.new()
 
 local ViewmodelProfile = {}
 
@@ -53,6 +54,7 @@ function ViewmodelProfile:Update(DeltaTime)
     if not self.Enabled then return end
     local CameraCFrame = Camera.CFrame
     local ViewmodelHumanoidRootPart = self.Viewmodel.HumanoidRootPart
+    local ViewmodelCamPart = self.Viewmodel.CamPart
     if not self.Character then
         return
     end
@@ -65,10 +67,21 @@ function ViewmodelProfile:Update(DeltaTime)
     local Sway = self:UpdateSway(DeltaTime)
     local Strafe = self:UpdateStrafe(DeltaTime, CharacterHumanoid, CharacterHumanoidRootPart)
     ViewmodelHumanoidRootPart.CFrame = CameraCFrame * self.ViewmodelOffset
+    self:AnimateCamera(ViewmodelHumanoidRootPart, ViewmodelCamPart)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X, Bobble.Y, 0))
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.1, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Sway.Y, Sway.X, Sway.Z)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
+end
+
+function ViewmodelProfile:AnimateCamera(ViewmodelHumanoidRootPart, ViewmodelCamPart)
+    local NewCameraCFrame = ViewmodelCamPart.CFrame:ToObjectSpace(ViewmodelHumanoidRootPart.CFrame)
+    if OldCameraCFrame then
+        local _,_,z = NewCameraCFrame:ToOrientation()
+        local x,y,_ = NewCameraCFrame:ToObjectSpace(OldCameraCFrame):ToEulerAnglesXYZ()
+        Camera.CFrame = Camera.CFrame * CFrame.Angles(x, y, -z)
+    end
+    OldCameraCFrame = NewCameraCFrame
 end
 
 -- Bob viewmodel
