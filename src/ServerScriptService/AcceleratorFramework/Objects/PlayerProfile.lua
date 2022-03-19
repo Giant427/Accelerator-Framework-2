@@ -95,7 +95,7 @@ end
 
 -- Add gun to inventory
 function PlayerProfile:AddGun(GunName)
-	local Metadata = GunResourcesHandler:GetResource("Metadata", GunName)
+	local Metadata = GunResourcesHandler:GetResource(GunName, "Metadata")
 	Metadata.Player = self.Player
 	self.RemoteEvent:FireClient(self.Player, ":AddGun(GunName)", GunName)
 	local GunProfileServer = ObjectCreator:CreateGunProfileServer(Metadata)

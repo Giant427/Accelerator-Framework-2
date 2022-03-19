@@ -90,11 +90,16 @@ end
 
 -- Add gun to inventory
 function ClientPlayerProfile:AddGun(GunName)
-	local Metadata = GunResourcesHandler:GetResource("Metadata", GunName)
+	local Metadata = GunResourcesHandler:GetResource(GunName, "Metadata")
 	Metadata.Player = self.Player
+	Metadata.Character = self.Character
+	Metadata.GunName = GunName
+	Metadata.Parent = self
 	local GunProfileClient = self.GunProfileClient:New(Metadata)
 	self.Inventory[#self.Inventory + 1] = GunProfileClient
 	getmetatable(self.Inventory[1])["New"] = nil
+	GunProfileClient:Initiate()
+	GunProfileClient:Equip()
 end
 
 -- Destructor

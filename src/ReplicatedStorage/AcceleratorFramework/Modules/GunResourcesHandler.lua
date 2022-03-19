@@ -5,7 +5,7 @@ local GunResourcesFolder = ReplicatedStorageFolder:WaitForChild("GunResources")
 local GunResourcesHandler = {}
 
 -- Returns a resource for a gun, an object or a table if resource is in module script
-function GunResourcesHandler:GetResource(ResourceType, GunName)
+function GunResourcesHandler:GetResource(GunName, ResourceType)
     local ResourceContainer = GunResourcesFolder:FindFirstChild(ResourceType)
     if not ResourceContainer then
         error("Resource type "..ResourceType.." doesn't exist")
@@ -26,17 +26,17 @@ end
 
 -- Get gun resources
 function GunResourcesHandler:GetGunRecources(GunName)
-    local RecoilPattern = self:GetResource("RecoilPattern", GunName)
-    local ViewmodelOffset = self:GetResource("ViewmodelOffset", GunName)
-    local Comms = self:GetResource("Comms", GunName)
-    local Stats = self:GetResource("Metadata", GunName)
-    local Sounds = self:GetResource("Sounds", GunName)
-    local VisualEffects = self:GetResource("VisualEffects", GunName)
-    local Animations = self:GetResource("Animations", GunName)
-    local Model = self:GetResource("Models", GunName)
-    local Shell = self:GetResource("Shells", GunName)
+    local RecoilPattern = self:GetResource(GunName, "RecoilPattern")
+    local ViewmodelOffset = self:GetResource(GunName, "ViewmodelOffset")
+    local RemoteEvent = self:GetResource(GunName, "RemoteEvents")
+    local Metadata = self:GetResource(GunName, "Metadata")
+    local Sounds = self:GetResource(GunName, "Sounds")
+    local Particles = self:GetResource(GunName, "Particles")
+    local Animations = self:GetResource(GunName, "Animations")
+    local Model = self:GetResource(GunName, "Models")
+    local Shell = self:GetResource(GunName, "Shells")
 
-    return RecoilPattern, ViewmodelOffset, Comms, Stats, Sounds, VisualEffects, Animations, Model, Shell
+    return RecoilPattern, ViewmodelOffset, RemoteEvent, Metadata, Sounds, Particles, Animations, Model, Shell
 end
 
 -- Get Viewmodel

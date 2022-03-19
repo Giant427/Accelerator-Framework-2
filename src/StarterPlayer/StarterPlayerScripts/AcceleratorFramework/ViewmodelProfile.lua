@@ -12,6 +12,7 @@ local ViewmodelProfile = {}
 ViewmodelProfile.Player = nil
 ViewmodelProfile.Character = nil
 ViewmodelProfile.Viewmodel = nil
+ViewmodelProfile.ViewmodelOffset = CFrame.new()
 ViewmodelProfile.Enabled = false
 ViewmodelProfile.BobSpring = {}
 ViewmodelProfile.SwaySpring = {}
@@ -63,8 +64,8 @@ function ViewmodelProfile:Update(DeltaTime)
     local Bobble = self:UpdateBob(DeltaTime, CharacterHumanoidRootPart)
     local Sway = self:UpdateSway(DeltaTime)
     local Strafe = self:UpdateStrafe(DeltaTime, CharacterHumanoid, CharacterHumanoidRootPart)
-    ViewmodelHumanoidRootPart.CFrame = CameraCFrame
-    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X * 0.7, Bobble.Y, 0))
+    ViewmodelHumanoidRootPart.CFrame = CameraCFrame * self.ViewmodelOffset
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X, Bobble.Y, 0))
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.1, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Sway.Y, Sway.X, Sway.Z)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
@@ -93,7 +94,7 @@ end
 function ViewmodelProfile:UpdateStrafe(DeltaTime, CharacterHumanoid, CharacterHumanoidRootPart)
     local StrafeValue = -CharacterHumanoidRootPart.CFrame.RightVector:Dot(CharacterHumanoid.MoveDirection)
     local JumpValue = -CharacterHumanoidRootPart.CFrame.UpVector:Dot(CharacterHumanoidRootPart.Velocity)
-    self.StrafeSpring:shove(Vector3.new(JumpValue * 0.3, 0, StrafeValue * 4))
+    self.StrafeSpring:shove(Vector3.new(JumpValue * 0.3, 0, StrafeValue * 6))
     local Strafe = self.StrafeSpring:update(DeltaTime)
     return Strafe
 end
