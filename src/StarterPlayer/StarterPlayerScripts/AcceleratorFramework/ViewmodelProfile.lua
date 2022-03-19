@@ -64,15 +64,15 @@ function ViewmodelProfile:Update(DeltaTime)
     local Sway = self:UpdateSway(DeltaTime)
     local Strafe = self:UpdateStrafe(DeltaTime, CharacterHumanoid, CharacterHumanoidRootPart)
     ViewmodelHumanoidRootPart.CFrame = CameraCFrame
-    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X * 0.7, Bobble.Y * 0.7, 0))
-    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.5, 0)
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X * 0.7, Bobble.Y, 0))
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.1, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Sway.Y, Sway.X, Sway.Z)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
 end
 
 -- Bob viewmodel
 function ViewmodelProfile:UpdateBob(DeltaTime, CharacterHumanoidRootPart)
-    local Speed = 8
+    local Speed = 15
 	local Modifier = 0.1
     local BobValue = math.sin(tick() * Speed) * Modifier
     local BobSpringShove = Vector3.new(BobValue, BobValue, BobValue)
