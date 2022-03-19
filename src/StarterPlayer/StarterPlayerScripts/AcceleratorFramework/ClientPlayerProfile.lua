@@ -53,6 +53,7 @@ function ClientPlayerProfile:Initiate()
 	ProfileInfo.Player = self.Player
 	self.ViewmodelProfile = require(script.Parent.ViewmodelProfile):New(ProfileInfo)
 	self.ViewmodelProfile:Initiate()
+	self.ViewmodelProfile:ChangeTransparency(1)
 	-- Gun profile client
 	for i,v in pairs(require(self.Player.PlayerScripts.AcceleratorFramework.GunProfileClient)) do
 		self.GunProfileClient[i] = v
@@ -100,6 +101,28 @@ function ClientPlayerProfile:AddGun(GunName)
 	getmetatable(self.Inventory[1])["New"] = nil
 	GunProfileClient:Initiate()
 	GunProfileClient:Equip()
+end
+
+function ClientPlayerProfile:PlaySound(GunModel, GunComponentName, SoundName)
+	local GunComponent = GunModel.GunComponents:FindFirstChild(GunComponentName)
+	if not GunComponent then return end
+	local Sound = GunComponent:FindFirstChild(SoundName)
+	if not Sound then return end
+	if not Sound:IsA("Sound") then return end
+	Sound:Play()
+end
+
+function ClientPlayerProfile:EmitParticles(GunModel, GunComponentName, ParticleEmitterName)
+	local GunComponent = GunModel.GunComponents:FindFirstChild(GunComponentName)
+	if not GunComponent then return end
+	local ParticleEmitter = GunComponent:FindFirstChild(ParticleEmitterName)
+	if not ParticleEmitter then return end
+	if not ParticleEmitter:IsA("ParticleEmitter") then return end
+	ParticleEmitter.Enabled = true
+	task.spawn(function()
+		task.wait(0.1)
+		ParticleEmitter.Enabled = false
+	end)
 end
 
 -- Destructor

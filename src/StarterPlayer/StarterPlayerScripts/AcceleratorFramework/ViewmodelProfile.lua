@@ -49,6 +49,18 @@ function ViewmodelProfile:DestroyViewmodel()
    end
 end
 
+-- Change transparency
+function ViewmodelProfile:ChangeTransparency(Transparency)
+    if not self.Viewmodel then return end
+    for i,v in pairs(self.Viewmodel:GetDescendants()) do
+        if v:IsA("BasePart") then
+            if v.Name ~= "HumanoidRootPart" and v.Name ~= "CamPart" and v.Parent.Name ~= "GunComponents" then
+                v.Transparency = Transparency
+            end
+        end
+    end
+end
+
 -- Update viewmodel position and perform various movements and stuff, I can't really explain this just read the code and test it
 function ViewmodelProfile:Update(DeltaTime)
     if not self.Enabled then return end
@@ -71,6 +83,7 @@ function ViewmodelProfile:Update(DeltaTime)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame:ToWorldSpace(CFrame.new(Bobble.X, Bobble.Y, 0))
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Bobble.X * 0.1, Bobble.Y * 0.1, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.Angles(Sway.Y, Sway.X, Sway.Z)
+    ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.new(-Sway.Y, 0, 0)
     ViewmodelHumanoidRootPart.CFrame = ViewmodelHumanoidRootPart.CFrame * CFrame.fromEulerAnglesYXZ(math.rad(Strafe.X), 0, math.rad(Strafe.Z))
 end
 
@@ -100,7 +113,7 @@ end
 function ViewmodelProfile:UpdateSway(DeltaTime)
     local MouseDelta = UserInputService:GetMouseDelta()
     self.SwaySpring:shove(Vector3.new(MouseDelta.X / 200, MouseDelta.Y / 150))
-    local Sway = self.SwaySpring:update(DeltaTime)
+    local Sway = self.SwaySpring:update(DeltaTime) * 2
     return Sway
 end
 

@@ -44,9 +44,12 @@ function GunProfileClient:Equip()
 	local Particles = GunResourcesHandler:GetResource(self.GunName, "Particles")
 	Model = self:BuildModel(Model, Sounds, Particles)
 	self:WeldGunModelToViewmodel(Model)
-	self.Animations.Idle:Play()
 	self.Parent.ViewmodelProfile.ViewmodelOffset = self.ViewmodelOffset
+	self.Animations.Idle:Play()
+	self.Parent:PlaySound(self.Parent.ViewmodelProfile.Viewmodel[self.GunName], "Handle", "Equip")
+	self.Parent.ViewmodelProfile:ChangeTransparency(0)
 	self.Animations.Equip:Play()
+	task.wait(self.Animations.Equip.Length)
 end
 
 -- Weld gun model to viewmodel
@@ -59,7 +62,6 @@ function GunProfileClient:WeldGunModelToViewmodel(Model)
 	HandleMotor.Part0 = Viewmodel.HumanoidRootPart
 	HandleMotor.Part1 = Handle
 	Model.Parent = Viewmodel
-	Viewmodel.Parent = game.Workspace.CurrentCamera
 end
 
 -- Break gun model to viewmodel weld
@@ -75,20 +77,27 @@ function GunProfileClient:BreakdGunModelWeldToViewmodel()
 	end
 end
 
--- Builds the model which to be placed in the player character
+-- Builds the gun model
 function GunProfileClient:BuildModel(Model, Sounds, Particles)
 	local Handle = Model:WaitForChild("GunComponents"):WaitForChild("Handle")
 	-- Sounds
 	for _,v in pairs(Sounds:GetChildren()) do
-		v.Parent = Model.GunComponents.Handle
+		local Configuration = string.split(v.Name, ".")
+		if Model.GunComponents:FindFirstChild(Configuration[1]) then
+			v.Name = Configuration[2]
+			v.Parent = Model.GunComponents:FindFirstChild(Configuration[1])
+		else
+			v.Parent = Model.GunComponents.Handle
+		end
 	end
 	-- Particle emitters
 	for _,v in pairs(Particles:GetChildren()) do
-		v.Parent = Model.GunComponents.Barrel
-	end
-	for _,v in pairs(Model:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CanCollide = false
+		local Configuration = string.split(v.Name, ".")
+		if Model.GunComponents:FindFirstChild(Configuration[1]) then
+			v.Name = Configuration[2]
+			v.Parent = Model.GunComponents:FindFirstChild(Configuration[1])
+		else
+			v.Parent = Model.GunComponents.Handle
 		end
 	end
 	-- Welding gun components (not animateable)
@@ -111,6 +120,11 @@ function GunProfileClient:BuildModel(Model, Sounds, Particles)
 			Motor.Part1 = v
 			Motor.C0 = Motor.Part0.CFrame:Inverse() * Motor.Part1.CFrame
 			Motor.Parent = Handle
+		end
+	end
+	for _,v in pairs(Model:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = false
 		end
 	end
 	return Model
