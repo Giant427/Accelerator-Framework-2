@@ -7,7 +7,6 @@ local GunProfileClient = {}
 GunProfileClient.Player = nil
 GunProfileClient.Character = nil
 GunProfileClient.GunName = ""
-GunProfileClient.InventorySlot = ""
 GunProfileClient.Parent = {}
 GunProfileClient.ViewmodelOffset = CFrame.new()
 GunProfileClient.RemoteEvent = nil
@@ -30,10 +29,10 @@ end
 -- Load animations
 function GunProfileClient:LoadAnimations(Animations)
 	local Viewmodel = self.Parent.ViewmodelProfile.Viewmodel
-	local AnimationController = Viewmodel.AnimationController
+	local Animator = Viewmodel.AnimationController.Animator
 	for _,v in pairs(Animations:GetChildren()) do
 		if v:IsA("Animation") then
-			self.Animations[v.Name] = AnimationController:LoadAnimation(v)
+			self.Animations[v.Name] = Animator:LoadAnimation(v)
 		end
 	end
 end
@@ -43,25 +42,40 @@ function GunProfileClient:Equip()
 	local Model = GunResourcesHandler:GetResource(self.GunName, "Models")
 	local Sounds = GunResourcesHandler:GetResource(self.GunName, "Sounds")
 	local Particles = GunResourcesHandler:GetResource(self.GunName, "Particles")
-	Model = self:BuildModel(Model, Sounds, Particles)
-	self:WeldGunModelToViewmodel(Model)
-	self.Parent.ViewmodelProfile.ViewmodelOffset = self.ViewmodelOffset
+	local GunModel = self:BuildModel(Model, Sounds, Particles)
+	self:WeldGunModelToViewmodel(GunModel)
 	self.Animations.Idle:Play()
+	self.Parent.ViewmodelProfile.ViewmodelOffset = self.ViewmodelOffset
 	self.Parent:PlaySound(self.Parent.ViewmodelProfile.Viewmodel[self.GunName], "Handle", "Equip")
 	self.Parent.ViewmodelProfile:ChangeTransparency(0)
 	self.Animations.Equip:Play()
 	self.Parent.UiProfile:UpdateGunGui(self.GunName, self.MagAmmo, self.MaxAmmo)
-	self.Parent.UiProfile:EquipInventorySlot(self.InventorySlot)
 	task.wait(self.Animations.Equip.Length)
+end
+
+-- Unequip
+function GunProfileClient:Unequip()
+	self.Parent.UiProfile:UpdateGunGui("", 0, 0)
+	self.Parent:PlaySound(self.Parent.ViewmodelProfile.Viewmodel[self.GunName], "Handle", "Unequip")
+	self.Animations.Unequip:Play()
+	task.wait(self.Animations.Unequip.Length)
+	self.Parent.ViewmodelProfile:ChangeTransparency(1)
+	self.Animations.Idle:Stop()
+	self.Parent.ViewmodelProfile.ViewmodelOffset = CFrame.new()
+	self:BreakdGunModelWeldToViewmodel()
+	task.wait(0.1)
 end
 
 -- Weld gun model to viewmodel
 function GunProfileClient:WeldGunModelToViewmodel(Model)
 	local Viewmodel = self.Parent.ViewmodelProfile.Viewmodel
 	local Handle = Model.GunComponents.Handle
-	local HandleMotor = Viewmodel.HumanoidRootPart:FindFirstChild("Handle") or Instance.new("Motor6D")
-	HandleMotor.Name = "Handle"
-	HandleMotor.Parent = Viewmodel.HumanoidRootPart
+	local HandleMotor = Viewmodel.HumanoidRootPart:FindFirstChild("Handle")
+	if not HandleMotor then
+		HandleMotor = Instance.new("Motor6D")
+		HandleMotor.Name = "Handle"
+		HandleMotor.Parent = Viewmodel.HumanoidRootPart
+	end
 	HandleMotor.Part0 = Viewmodel.HumanoidRootPart
 	HandleMotor.Part1 = Handle
 	Model.Parent = Viewmodel
@@ -128,6 +142,7 @@ function GunProfileClient:BuildModel(Model, Sounds, Particles)
 	for _,v in pairs(Model:GetDescendants()) do
 		if v:IsA("BasePart") then
 			v.CanCollide = false
+			v.Transparency = 1
 		end
 	end
 	return Model

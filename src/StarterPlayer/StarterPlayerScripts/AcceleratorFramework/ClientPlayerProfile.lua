@@ -1,3 +1,5 @@
+local ContextActionService = game:GetService("ContextActionService")
+local GuiService = game:GetService("GuiService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedStorageFolder = ReplicatedStorage:WaitForChild("AcceleratorFramework")
 local GunResourcesHandler = require(ReplicatedStorageFolder:WaitForChild("Modules"):WaitForChild("GunResourcesHandler"))
@@ -14,6 +16,7 @@ ClientPlayerProfile.MovementProfile = {}
 ClientPlayerProfile.ViewmodelProfile = {}
 ClientPlayerProfile.UiProfile = {}
 ClientPlayerProfile.GunProfileClient = {}
+ClientPlayerProfile.Equipping = false
 ClientPlayerProfile.Inventory = {}
 ClientPlayerProfile.InventoryMaxSlots = 3
 ClientPlayerProfile.EquippedGunSlot = false
@@ -66,6 +69,15 @@ function ClientPlayerProfile:Initiate()
 	for i,v in pairs(require(self.Player.PlayerScripts.AcceleratorFramework.GunProfileClient)) do
 		self.GunProfileClient[i] = v
 	end
+	-- User input
+	local function ProcessUserInput(ActionName, InputState, InputObject)
+		self:ProcessUserInput(ActionName, InputState, InputObject)
+	end
+	ContextActionService:BindAction("ClientEquipGun", ProcessUserInput, false,
+		Enum.KeyCode.One,
+		Enum.KeyCode.Two,
+		Enum.KeyCode.Three
+	)
 	-- Enable
 	self.Enabled = true
 	self.MovementProfile.Enabled = true
@@ -78,6 +90,7 @@ function ClientPlayerProfile:Initiate()
 	self.Player.PlayerScripts.AcceleratorFramework.ClientPlayerProfile:Destroy()
 	self.Player.PlayerScripts.AcceleratorFramework.ViewmodelProfile:Destroy()
 	self.Player.PlayerScripts.AcceleratorFramework.UiProfile:Destroy()
+	self.Player.PlayerScripts.AcceleratorFramework.GunProfileClient:Destroy()
 end
 
 -- On character added
@@ -98,24 +111,79 @@ function ClientPlayerProfile:onClientEvent(Request, arg1)
 	end
 end
 
+-- Process user input
+function ClientPlayerProfile:ProcessUserInput(ActionName, InputState, InputObject)
+	if not self.Enabled then return end
+	if GuiService.MenuIsOpen then return end
+	if ActionName == "ClientEquipGun" then
+		if self.Equipping then return end
+		self.Equipping = true
+		local EnumKeyCodeToNumber = {
+			["Enum.KeyCode.One"] = 1,
+			["Enum.KeyCode.Two"] = 2,
+			["Enum.KeyCode.Three"] = 3,
+		}
+		if InputState == Enum.UserInputState.Begin then
+			if InputObject.UserInputType == Enum.UserInputType.Keyboard then
+				local SlotNumber = nil
+				for i,v in pairs(EnumKeyCodeToNumber) do
+					if i == tostring(InputObject.KeyCode) then
+						SlotNumber = v
+						break
+					end
+				end
+				local Gun = self.Inventory[SlotNumber]
+				if self.EquippedGunSlot == SlotNumber then
+					if Gun then
+						self:UnequipGun(SlotNumber)
+					end
+				else
+					if self.EquippedGunSlot ~= false and self.Inventory[self.EquippedGunSlot] then
+						self:UnequipGun(self.EquippedGunSlot)
+					end
+					if Gun then
+						self:EquipGun(SlotNumber)
+					end
+				end
+			end
+		end
+		self.Equipping = false
+	end
+end
+
+-- Equip gun
+function ClientPlayerProfile:EquipGun(SlotNumber)
+	self.EquippedGunSlot = SlotNumber
+	self.UiProfile:EquipInventorySlot(SlotNumber)
+	local GunProfileClient = self.Inventory[SlotNumber]
+	GunProfileClient:Equip()
+end
+
+-- Unequip gun
+function ClientPlayerProfile:UnequipGun(SlotNumber)
+	local GunProfileClient = self.Inventory[SlotNumber]
+	GunProfileClient:Unequip()
+	self.UiProfile:UnequipInventorySlot(SlotNumber)
+	self.EquippedGunSlot = false
+end
+
 -- Add gun to inventory
 function ClientPlayerProfile:AddGun(GunName)
 	if #self.Inventory + 1 > self.InventoryMaxSlots then return end
+	local SlotNumber = #self.Inventory + 1
 	local Metadata = GunResourcesHandler:GetResource(GunName, "Metadata")
 	Metadata.Player = self.Player
 	Metadata.Character = self.Character
 	Metadata.GunName = GunName
-	Metadata.InventorySlot = #self.Inventory + 1
 	Metadata.Parent = self
 	local GunProfileClient = self.GunProfileClient:New(Metadata)
 	getmetatable(GunProfileClient)["New"] = nil
-	self.EquippedGunSlot = #self.Inventory + 1
-	self.Inventory[#self.Inventory + 1] = GunProfileClient
-	self.UiProfile:UpdateInventorySlot(#self.Inventory, GunName)
+	self.Inventory[SlotNumber] = GunProfileClient
+	self.UiProfile:UpdateInventorySlot(SlotNumber, GunProfileClient.GunName)
 	GunProfileClient:Initiate()
-	GunProfileClient:Equip()
 end
 
+-- Play sound
 function ClientPlayerProfile:PlaySound(GunModel, GunComponentName, SoundName)
 	local GunComponent = GunModel.GunComponents:FindFirstChild(GunComponentName)
 	if not GunComponent then return end
@@ -125,6 +193,7 @@ function ClientPlayerProfile:PlaySound(GunModel, GunComponentName, SoundName)
 	Sound:Play()
 end
 
+-- Emit particles
 function ClientPlayerProfile:EmitParticles(GunModel, GunComponentName, ParticleEmitterName)
 	local GunComponent = GunModel.GunComponents:FindFirstChild(GunComponentName)
 	if not GunComponent then return end
