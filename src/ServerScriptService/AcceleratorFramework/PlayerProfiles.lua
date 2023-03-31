@@ -1,3 +1,0 @@
-local Players = {}
-
-return Players

@@ -1,3 +1,0 @@
-local ClientPlayerProfile = {}
-
-return ClientPlayerProfile

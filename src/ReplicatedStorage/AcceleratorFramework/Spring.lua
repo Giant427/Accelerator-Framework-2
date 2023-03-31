@@ -2,7 +2,8 @@
     Credit: x_o
 ]]--
 
-local ITERATIONS = 10
+
+local ITERATIONS = 8
 local SPRING = {
     Target = Vector3.new(),
     Position = Vector3.new(),
@@ -14,7 +15,17 @@ local SPRING = {
     Speed = 4,
 }
 
+-- creating a new spring
+
+function SPRING:New(t)
+	t = t or {}
+	setmetatable(t, self)
+	self.__index = self
+	return t
+end
+
 -- shoving the spring
+
 function SPRING:shove(force)
     local x, y, z = force.X, force.Y, force.Z
     if x ~= x or x == math.huge or x == -math.huge then
@@ -30,6 +41,7 @@ function SPRING:shove(force)
 end
 
 -- updating the spring
+
 function SPRING:update(dt)
     local scaledDeltaTime = math.min(dt,1) * self.Speed / ITERATIONS
 
@@ -46,13 +58,4 @@ function SPRING:update(dt)
     return self.Position
 end
 
--- creating a new spring
-local SprintModule = {}
-function SprintModule:New(t)
-	t = t or {}
-	setmetatable(t, SPRING)
-	SPRING.__index = SPRING
-	return t
-end
-
-return SprintModule
+return SPRING
